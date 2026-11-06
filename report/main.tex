@@ -30,7 +30,7 @@
 \InputIfFileExists{generated/macros.tex}{}{}
 \newcommand{\evidence}[1]{\IfFileExists{generated/#1}{\lstinputlisting{generated/#1}}{\fillin{Run scripts/make\_report\_snippets.py to insert generated/\detokenize{#1}}}}
 \newcommand{\gentable}[1]{\IfFileExists{generated/#1}{\input{generated/#1}}{\fillin{Run scripts/make\_report\_snippets.py to insert generated/\detokenize{#1}}}}
-\newcommand{\repo}{\fillin{https://github.com/ORG/flood-monitoring-team2}}
+\newcommand{\repo}{\url{https://github.com/natcastill/flood-monitoring-team2}}
 % ---------------------------------------------------------------------------
 
 \begin{document}
