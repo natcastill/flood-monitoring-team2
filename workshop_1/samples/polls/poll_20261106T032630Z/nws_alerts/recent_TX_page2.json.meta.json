@@ -1,0 +1,27 @@
+{
+  "url": "https://api.weather.gov/alerts?area%5B0%5D=TX&limit=500&cursor=eyJ0IjoxNzkzMzMxNjAwLCJpIjoidXJuOm9pZDoyLjQ5LjAuMS44NDAuMC5kMjhhZmZlOWM0ODY0YWU0ODRjMTc3NjE0ZTQ4ODI4MzhhNzcwMDVjLjAwMS4xIn0%3D",
+  "status_code": 200,
+  "retrieved_at_utc": "2026-11-06T03:26:37.752304+00:00",
+  "headers": {
+    "Server": "nginx/1.28.3",
+    "Content-Type": "application/geo+json",
+    "ETag": "W/\"276dc667b92e9296fa2254f682a78d0a:dtagent10337260504112723F6xZ:dtagent10337260504112723F6xZ\"",
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Expose-Headers": "X-Correlation-Id, X-Request-Id, X-Server-Id",
+    "X-Request-ID": "01a1aee4-e067-7f3c-9507-ed86d966052c",
+    "X-Correlation-ID": "42454a3",
+    "X-Server-ID": "vm-cprk-api-ops-app7.ncep.noaa.gov",
+    "Server-Timing": "dtTrId;desc=\"39394022614a6e86c3d006560727dbae\", dtSInfo;desc=\"0\", dtRpid;desc=\"990059308\"",
+    "Content-Encoding": "gzip",
+    "Content-Length": "172",
+    "Cache-Control": "public, max-age=5, s-maxage=5",
+    "Expires": "Fri, 06 Nov 2026 03:26:42 GMT",
+    "Date": "Fri, 06 Nov 2026 03:26:37 GMT",
+    "Connection": "keep-alive",
+    "Vary": "Accept-Encoding, Accept,Feature-Flags,Accept-Language",
+    "Set-Cookie": "dtCookie1up6hiss=v_4_srv_3_sn_F803312744DFB2B584888E57C20C4492_perc_100000_ol_0_mul_1_app-3Aea7c4b59f27d43eb_1; Path=/; Domain=.weather.gov",
+    "X-Edge-Request-ID": "5988cefa",
+    "Strict-Transport-Security": "max-age=31536000 ; includeSubDomains ; preload"
+  },
+  "bytes": 210
+}

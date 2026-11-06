@@ -1,0 +1,23 @@
+GET https://api.weather.gov/alerts/active?area=TX
+HTTP 200  retrieved 2026-11-06T03:26:36.545360+00:00
+Content-Type: application/geo+json
+Content-Length: 1566
+ETag: W/"7f9d71f0e5b22344160c7f90156d4d9c:dtagent10337260504112723F6xZ:dtagent10337260504112723F6xZ"
+Expires: Fri, 06 Nov 2026 03:26:41 GMT
+Cache-Control: public, max-age=5, s-maxage=5
+
+{
+ "geometry": "...",
+ "properties": {
+  "id": "urn:oid:2.49.0.1.840.0.44543a7ad9324c74ecf2274302ec477fdf42445c.001.1",
+  "event": "Flood Advisory",
+  "messageType": "Alert",
+  "status": "Actual",
+  "severity": "Minor",
+  "sent": "2026-11-05T20:40:00-06:00",
+  "onset": "2026-11-05T20:40:00-06:00",
+  "expires": "2026-11-05T22:45:00-06:00",
+  "areaDesc": "Nueces, TX",
+  "references": []
+ }
+}

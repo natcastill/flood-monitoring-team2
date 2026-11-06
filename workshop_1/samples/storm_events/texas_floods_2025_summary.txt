@@ -1,0 +1,8 @@
+source file: StormEvents_details-ftp_v1.0_d2025_c20260819.csv.gz
+all rows in file: 72360
+Texas Flood/Flash Flood/Heavy Rain rows: 724
+by type:
+EVENT_TYPE
+Flash Flood    624
+Flood           50
+Heavy Rain      50

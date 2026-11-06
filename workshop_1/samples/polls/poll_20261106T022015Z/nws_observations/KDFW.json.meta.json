@@ -1,0 +1,25 @@
+{
+  "url": "https://api.weather.gov/stations/KDFW/observations?limit=500",
+  "status_code": 200,
+  "retrieved_at_utc": "2026-11-06T02:20:17.578657+00:00",
+  "headers": {
+    "Server": "nginx/1.28.3",
+    "Content-Type": "application/geo+json",
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Expose-Headers": "X-Correlation-Id, X-Request-Id, X-Server-Id",
+    "X-Request-ID": "01a1aea4-cdb9-74b4-81db-732fe5c9e60e",
+    "X-Correlation-ID": "259c89e",
+    "X-Server-ID": "vm-cprk-api-ops-app12.ncep.noaa.gov",
+    "Server-Timing": "dtTrId;desc=\"55974181aeae6f84cc93f1cb92154c7e\", dtSInfo;desc=\"0\"",
+    "Content-Encoding": "gzip",
+    "Content-Length": "41641",
+    "Cache-Control": "public, max-age=81, s-maxage=120",
+    "Expires": "Fri, 06 Nov 2026 02:21:38 GMT",
+    "Date": "Fri, 06 Nov 2026 02:20:17 GMT",
+    "Connection": "keep-alive",
+    "Vary": "Accept-Encoding, Accept,Feature-Flags,Accept-Language",
+    "X-Edge-Request-ID": "3eaa8d19",
+    "Strict-Transport-Security": "max-age=31536000 ; includeSubDomains ; preload"
+  },
+  "bytes": 1984090
+}

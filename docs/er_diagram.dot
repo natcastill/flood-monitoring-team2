@@ -1,0 +1,20 @@
+digraph ER {
+  graph [rankdir=LR, fontname="Helvetica", nodesep=0.35, ranksep=0.7];
+  node  [shape=plain, fontname="Helvetica", fontsize=9];
+  edge  [fontname="Helvetica", fontsize=8, arrowhead=crow, arrowtail=tee, dir=both];
+  source [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="3"><tr><td bgcolor="#dbe7f3"><b>source</b></td></tr><tr><td align="left">PK source_id<br align="left"/>name, url, format<br align="left"/>role, license<br align="left"/></td></tr></table>>];
+  run [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="3"><tr><td bgcolor="#dbe7f3"><b>ingestion_run</b></td></tr><tr><td align="left">PK run_id<br align="left"/>FK source_id<br align="left"/>mode, status<br align="left"/>started_at, finished_at<br align="left"/>rows_in/new/rejected<br align="left"/></td></tr></table>>];
+  state [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="3"><tr><td bgcolor="#dbe7f3"><b>ingestion_state</b></td></tr><tr><td align="left">PK,FK source_id<br align="left"/>PK partition_key<br align="left"/>watermark, last_success<br align="left"/></td></tr></table>>];
+  event [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="3"><tr><td bgcolor="#f3e3c3"><b>event</b></td></tr><tr><td align="left">PK event_id<br align="left"/>FK source_id, FK run_id<br align="left"/>event_type, ts_utc<br align="left"/>latitude, longitude<br align="left"/>severity_level/value/unit<br align="left"/>raw_reference, record_hash<br align="left"/></td></tr></table>>];
+  grp [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="3"><tr><td bgcolor="#dbe7f3"><b>event_group</b></td></tr><tr><td align="left">PK group_id<br align="left"/>PK,FK event_id<br align="left"/>match_rule, match_score<br align="left"/></td></tr></table>>];
+  rej [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="3"><tr><td bgcolor="#dbe7f3"><b>rejected_record</b></td></tr><tr><td align="left">PK rejected_id<br align="left"/>FK run_id, FK source_id<br align="left"/>reason, payload<br align="left"/></td></tr></table>>];
+  fe [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="3"><tr><td bgcolor="#d9ead3"><b>flood_event</b></td></tr><tr><td align="left">PK,FK event_id<br align="left"/>episode_id, cz_type, cz_fips<br align="left"/>flood_cause, damage_usd<br align="left"/>deaths, injuries<br align="left"/></td></tr></table>>];
+  dp [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="3"><tr><td bgcolor="#d9ead3"><b>daily_precipitation</b></td></tr><tr><td align="left">PK,FK event_id<br align="left"/>FK station_id<br align="left"/>obs_date, prcp_mm<br align="left"/>mflag, qflag<br align="left"/></td></tr></table>>];
+  so [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="3"><tr><td bgcolor="#d9ead3"><b>station_observation</b></td></tr><tr><td align="left">PK,FK event_id<br align="left"/>FK station_id<br align="left"/>precip_1h/3h/6h_mm<br align="left"/>precip_qc<br align="left"/></td></tr></table>>];
+  fa [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="3"><tr><td bgcolor="#d9ead3"><b>flood_alert</b></td></tr><tr><td align="left">PK,FK event_id<br align="left"/>alert_id, message_type<br align="left"/>nws_event, sent, expires<br align="left"/>ugc_codes, reference_ids<br align="left"/></td></tr></table>>];
+  ws [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="3"><tr><td bgcolor="#d9ead3"><b>weather_station</b></td></tr><tr><td align="left">PK station_id<br align="left"/>network, name<br align="left"/>latitude, longitude<br align="left"/>paired_station_id<br align="left"/></td></tr></table>>];
+  source -> run; source -> state; source -> event; source -> rej; run -> event; run -> rej;
+  event -> grp;
+  event -> fe [arrowhead=tee]; event -> dp [arrowhead=tee]; event -> so [arrowhead=tee]; event -> fa [arrowhead=tee];
+  ws -> dp; ws -> so;
+}

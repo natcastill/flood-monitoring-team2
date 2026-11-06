@@ -1,0 +1,22 @@
+digraph A {
+  graph [rankdir=LR, fontname="Helvetica", nodesep=0.3, ranksep=0.45];
+  node [shape=box, style="rounded,filled", fillcolor="#eef3f8", fontname="Helvetica", fontsize=9];
+  edge [fontname="Helvetica", fontsize=8];
+  subgraph cluster_src { label="Sources (Texas)"; fontsize=9; style=dashed;
+    se [label="NOAA Storm Events\nyearly CSV.gz\n(historical)"];
+    gh [label="GHCN-Daily PRCP\nNCEI Access Data Service\n(historical)"];
+    ob [label="NWS observations\nhourly GeoJSON\n(incremental)"];
+    al [label="NWS alerts\n/alerts/active?area=TX\n(incremental)"];
+  }
+  orch [label="Airflow scheduler\nhistorical: once\nalerts 15 min / obs 60 min\nGHCN daily / StormEv monthly", fillcolor="#fff2cc"];
+  ing  [label="ingest.py\n--mode historical | incremental\nwatermarks from ingestion_state", fillcolor="#fff2cc"];
+  raw  [label="Raw landing zone\ndata/raw/source_YYYYMMDD_HHMMSS.ext"];
+  norm [label="Normalize & validate\nUTC, WGS84, mm, USD\ndedupe by source key\nhash change detection"];
+  q    [label="Quarantine\nrejected_record", fillcolor="#f4cccc"];
+  db   [label="PostgreSQL + PostGIS\nsource, ingestion_run/state\nevent, event_group\nflood_event, daily_precipitation\nstation_observation, flood_alert", fillcolor="#d9ead3"];
+  an   [label="Analytics\nrain 24h / 7d vs history\nflood frequency per county\nactive alerts -> Flood Risk Index"];
+  dash [label="Plotly Dash\nlocalhost:8050", fillcolor="#d0e0f0"];
+  se -> ing; gh -> ing; ob -> ing; al -> ing; orch -> ing [style=dashed, label="triggers"];
+  ing -> raw -> norm; norm -> db [label="valid"]; norm -> q [label="invalid"];
+  db -> an -> dash; q -> dash [style=dotted, label="data quality"];
+}

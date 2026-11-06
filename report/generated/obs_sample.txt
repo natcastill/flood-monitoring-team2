@@ -1,0 +1,28 @@
+GET https://api.weather.gov/stations/KAUS/observations?limit=500
+HTTP 200  retrieved 2026-11-06T03:26:32.494521+00:00
+Content-Type: application/geo+json
+Content-Length: 42407
+Expires: Fri, 06 Nov 2026 03:31:32 GMT
+Cache-Control: public, max-age=300, s-maxage=120
+
+{
+ "geometry": {
+  "type": "Point",
+  "coordinates": [
+   -97.67,
+   30.19
+  ]
+ },
+ "properties": {
+  "@id": "https://api.weather.gov/stations/KAUS/observations/2026-11-06T02:55:00+00:00",
+  "stationId": "KAUS",
+  "timestamp": "2026-11-06T02:55:00+00:00",
+  "textDescription": "Clear",
+  "temperature": {
+   "unitCode": "wmoUnit:degC",
+   "value": 18,
+   "qualityControl": "V"
+  },
+  "precipitationLastHour": null
+ }
+}

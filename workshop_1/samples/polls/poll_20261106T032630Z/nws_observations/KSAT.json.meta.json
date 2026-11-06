@@ -1,0 +1,26 @@
+{
+  "url": "https://api.weather.gov/stations/KSAT/observations?limit=500",
+  "status_code": 200,
+  "retrieved_at_utc": "2026-11-06T03:26:33.342762+00:00",
+  "headers": {
+    "Server": "nginx/1.28.3",
+    "Content-Type": "application/geo+json",
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Expose-Headers": "X-Correlation-Id, X-Request-Id, X-Server-Id",
+    "X-Request-ID": "01a1aee4-cdf2-7100-ac29-952dab10fa2b",
+    "X-Correlation-ID": "18ac5baa",
+    "X-Server-ID": "vm-cprk-api-ops-app4.ncep.noaa.gov",
+    "Server-Timing": "dtTrId;desc=\"54e0382935a4cacf5fec9f2a39edd5d3\", dtSInfo;desc=\"0\"",
+    "Content-Encoding": "gzip",
+    "Content-Length": "40662",
+    "Cache-Control": "public, max-age=300, s-maxage=120",
+    "Expires": "Fri, 06 Nov 2026 03:31:33 GMT",
+    "Date": "Fri, 06 Nov 2026 03:26:33 GMT",
+    "Connection": "keep-alive",
+    "Vary": "Accept-Encoding, Accept,Feature-Flags,Accept-Language",
+    "Set-Cookie": "dtCookie1up6hiss=v_4_srv_1_sn_7B990F7F7D811286DC9E0654CE75C3F4_perc_100000_ol_0_mul_1_app-3Aea7c4b59f27d43eb_1; Path=/; Domain=.weather.gov",
+    "X-Edge-Request-ID": "7b3c479",
+    "Strict-Transport-Security": "max-age=31536000 ; includeSubDomains ; preload"
+  },
+  "bytes": 1977818
+}

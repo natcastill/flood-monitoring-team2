@@ -1,0 +1,37 @@
+# Incremental poll comparison
+
+- Poll 1: `poll_20261106T022015Z`
+- Poll 2: `poll_20261106T032630Z`
+
+## NWS alerts (active + recent, Texas)
+- Poll 1: 226 distinct alert ids; poll 2: 226
+- New ids in poll 2: 1; ids no longer returned: 1
+- Same id, different content: 0
+- New alerts that reference earlier alerts (Update/Cancel chain): 0
+- messageType in poll 2: Alert=115, Cancel=31, Update=80
+
+
+## NWS station observations
+| station | obs poll 1 | obs poll 2 | newest ts poll 1 | newest ts poll 2 | new ts | overlapping ts with changed values |
+|---|---|---|---|---|---|---|
+| KAUS | 500 | 500 | 2026-11-06T01:15:00+00:00 | 2026-11-06T02:55:00+00:00 | 7 | 0 |
+| KCRP | 500 | 500 | 2026-11-06T01:24:00+00:00 | 2026-11-06T02:55:00+00:00 | 8 | 0 |
+| KDFW | 500 | 500 | 2026-11-06T01:15:00+00:00 | 2026-11-06T02:55:00+00:00 | 8 | 0 |
+| KIAH | 500 | 500 | 2026-11-06T01:15:00+00:00 | 2026-11-06T02:55:00+00:00 | 7 | 0 |
+| KSAT | 500 | 500 | 2026-11-06T01:15:00+00:00 | 2026-11-06T02:55:00+00:00 | 7 | 0 |
+
+## HTTP headers
+| endpoint | header | poll 1 | poll 2 | changed |
+|---|---|---|---|---|
+| alerts/active | ETag | W/"d190d23230a0aa478d1317904aebb117:dtagent10337260504112723F6xZ:dtagent10337260504112723F6xZ" | W/"7f9d71f0e5b22344160c7f90156d4d9c:dtagent10337260504112723F6xZ:dtagent10337260504112723F6xZ" | yes |
+| alerts/active | Last-Modified | - | - | no |
+| alerts/active | Expires | Fri, 06 Nov 2026 02:20:24 GMT | Fri, 06 Nov 2026 03:26:41 GMT | yes |
+| alerts/active | Cache-Control | public, max-age=5, s-maxage=5 | public, max-age=5, s-maxage=5 | no |
+| alerts/active | X-Request-Id | - | - | no |
+| alerts/active | Date | Fri, 06 Nov 2026 02:20:19 GMT | Fri, 06 Nov 2026 03:26:36 GMT | yes |
+| observations/KIAH | ETag | - | - | no |
+| observations/KIAH | Last-Modified | - | - | no |
+| observations/KIAH | Expires | Fri, 06 Nov 2026 02:25:15 GMT | Fri, 06 Nov 2026 03:31:31 GMT | yes |
+| observations/KIAH | Cache-Control | public, max-age=300, s-maxage=120 | public, max-age=300, s-maxage=120 | no |
+| observations/KIAH | X-Request-Id | - | - | no |
+| observations/KIAH | Date | Fri, 06 Nov 2026 02:20:15 GMT | Fri, 06 Nov 2026 03:26:31 GMT | yes |

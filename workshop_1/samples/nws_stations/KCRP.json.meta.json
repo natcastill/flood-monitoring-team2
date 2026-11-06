@@ -1,0 +1,26 @@
+{
+  "url": "https://api.weather.gov/stations/KCRP",
+  "status_code": 200,
+  "retrieved_at_utc": "2026-11-06T02:20:15.182975+00:00",
+  "headers": {
+    "Server": "nginx/1.28.3",
+    "Content-Type": "application/geo+json",
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Expose-Headers": "X-Correlation-Id, X-Request-Id, X-Server-Id",
+    "X-Request-ID": "01a1aea8-1b9d-7192-886b-18ee43e431aa",
+    "X-Correlation-ID": "73e1372",
+    "X-Server-ID": "vm-cprk-api-ops-app7.ncep.noaa.gov",
+    "Server-Timing": "dtTrId;desc=\"acc3dc4c37b4c286932721c885d914a6\", dtSInfo;desc=\"0\"",
+    "Content-Encoding": "gzip",
+    "Content-Length": "666",
+    "Cache-Control": "public, max-age=86400, s-maxage=86400",
+    "Expires": "Sat, 07 Nov 2026 02:20:15 GMT",
+    "Date": "Fri, 06 Nov 2026 02:20:15 GMT",
+    "Connection": "keep-alive",
+    "Vary": "Accept-Encoding, Accept,Feature-Flags,Accept-Language",
+    "Set-Cookie": "dtCookie1up6hiss=v_4_srv_3_sn_46C6A8EC6D70525931945B207FFAFE23_perc_100000_ol_0_mul_1_app-3Aea7c4b59f27d43eb_1; Path=/; Domain=.weather.gov",
+    "X-Edge-Request-ID": "74ba4ae",
+    "Strict-Transport-Security": "max-age=31536000 ; includeSubDomains ; preload"
+  },
+  "bytes": 2154
+}

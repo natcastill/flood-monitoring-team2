@@ -1,0 +1,82 @@
+# Source catalog for the Flood Monitoring and Risk system (Team 2, Texas scope).
+# One entry per source. Secrets never go here: the NWS contact comes from the
+# NWS_USER_AGENT environment variable (see .env.example).
+
+project:
+  hazard: flood
+  scope:
+    country: US
+    state: TX
+    state_fips: "48"
+    bbox: {min_lat: 25.8, max_lat: 36.5, min_lon: -106.65, max_lon: -93.5}
+  historical_window: {start: "2010-01-01", end: "present"}
+  current_situation: "last 24 hours of rainfall, last 7 days of accumulation, and active flood alerts"
+
+sources:
+  - source_id: noaa_storm_events
+    name: NOAA Storm Events Database (details files)
+    owner: NOAA National Centers for Environmental Information (NCEI)
+    role: historical
+    url: https://www.ncei.noaa.gov/pub/data/swdi/stormevents/csvfiles/
+    docs: https://www.ncei.noaa.gov/stormevents/
+    access: bulk HTTPS download, one gzipped CSV per year
+    auth: none
+    format: csv.gz
+    filters: {STATE: TEXAS, EVENT_TYPE: [Flood, Flash Flood, Heavy Rain]}
+    partition: year
+    schedule: monthly re-check of the file listing
+    watermark_field: file name compilation suffix (_cYYYYMMDD) per year
+    duplicate_key: EVENT_ID
+    license: U.S. Government work, public domain
+    attribution: "NOAA National Centers for Environmental Information. Storm Events Database."
+
+  - source_id: ncei_ghcnd
+    name: GHCN-Daily via NCEI Access Data Service
+    owner: NOAA National Centers for Environmental Information (NCEI)
+    role: historical
+    url: https://www.ncei.noaa.gov/access/services/data/v1
+    docs: https://www.ncei.noaa.gov/support/access-data-service-api-user-documentation
+    access: REST query (dataset=daily-summaries)
+    auth: none
+    format: json
+    params: {dataset: daily-summaries, dataTypes: PRCP, units: metric, includeStationLocation: 1, includeAttributes: true}
+    stations: [USW00012960, USW00013904, USW00012921, USW00003927, USW00012924]
+    partition: station x year
+    schedule: daily (values for recent days can still be added or corrected)
+    watermark_field: DATE (per station), re-reading the last 30 days
+    duplicate_key: [STATION, DATE]
+    license: U.S. Government work, public domain
+    attribution: "Menne et al. (2012), Global Historical Climatology Network - Daily (GHCN-Daily), Version 3. NOAA NCEI."
+
+  - source_id: nws_observations
+    name: NWS API latest station observations
+    owner: NOAA National Weather Service
+    role: incremental
+    url: https://api.weather.gov/stations/{station_id}/observations
+    docs: https://www.weather.gov/documentation/services-web-api
+    access: REST, GeoJSON
+    auth: none (User-Agent header with application name and contact is required)
+    format: geojson
+    stations: [KIAH, KAUS, KSAT, KDFW, KCRP]
+    schedule: every 60 minutes
+    watermark_field: properties.timestamp (per station), with a 3-hour overlap
+    duplicate_key: [station, timestamp]
+    license: U.S. Government work, public domain
+    attribution: "NOAA National Weather Service API."
+
+  - source_id: nws_alerts
+    name: NWS API alerts (active and recent)
+    owner: NOAA National Weather Service
+    role: incremental
+    url: https://api.weather.gov/alerts/active?area=TX
+    history_url: https://api.weather.gov/alerts?area=TX
+    docs: https://www.weather.gov/documentation/services-web-api
+    access: REST, GeoJSON (CAP-based)
+    auth: none (User-Agent header required)
+    format: geojson
+    event_filter: [Flood Warning, Flood Watch, Flood Advisory, Flash Flood Warning, Flash Flood Watch, Flash Flood Statement, Flood Statement]
+    schedule: every 15 minutes
+    watermark_field: properties.sent, plus properties.id and properties.references for updates and cancellations
+    duplicate_key: properties.id
+    license: U.S. Government work, public domain
+    attribution: "NOAA National Weather Service API."
