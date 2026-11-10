@@ -46,6 +46,6 @@ tests/, tests/fixtures/ tests and recorded responses
 notebooks/             01_source_profiling.ipynb
 scripts/               Workshop 1 sample collection and poll comparison
 docs/                  ingestion contract, ER and architecture diagrams, source-status log
-workshop_1/            mapping.md and samples/
-report/                Workshop 1 report (LaTeX)
+workshop_1/            Workshop 1 deliverables: final report PDF, mapping.md and samples/
+report/                LaTeX source of the report (main.tex, references.bib, figures/, generated/)
 ```
