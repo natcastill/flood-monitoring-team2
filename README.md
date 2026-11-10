@@ -18,6 +18,11 @@ historical daily rainfall, current station observations and active NWS flood ale
 | Incremental 1 | NWS station observations (KIAH, KAUS, KSAT, KDFW, KCRP) | https://api.weather.gov/stations/{id}/observations |
 | Incremental 2 | NWS active alerts for Texas | https://api.weather.gov/alerts/active?area=TX |
 
+The URLs above are API base endpoints: opening them without parameters returns an error (for example, NCEI answers `400 Bad Request: dataset must not be null`). Example requests that work in a browser:
+- GHCN-Daily, San Antonio rainfall 10-14 June 2025: https://www.ncei.noaa.gov/access/services/data/v1?dataset=daily-summaries&stations=USW00012921&startDate=2025-06-10&endDate=2025-06-14&dataTypes=PRCP&units=metric&format=json
+- NWS active alerts for Texas: https://api.weather.gov/alerts/active?area=TX
+- NWS latest observations at Houston IAH: https://api.weather.gov/stations/KIAH/observations?limit=5
+
 All sources are U.S. Government works (public domain); attribution in `config/sources.yaml`.
 
 ## Quick start (Workshop 1)
@@ -46,6 +51,19 @@ tests/, tests/fixtures/ tests and recorded responses
 notebooks/             01_source_profiling.ipynb
 scripts/               Workshop 1 sample collection and poll comparison
 docs/                  ingestion contract, ER and architecture diagrams, source-status log
-workshop_1/            mapping.md and samples/
-report/                Workshop 1 report (LaTeX)
+workshop_1/            Workshop 1 deliverables: final report PDF, mapping.md and samples/
+report/                LaTeX source of the report (main.tex, references.bib, figures/, generated/)
 ```
+
+## Workshop 1 deliverables
+| Deliverable | Location |
+|---|---|
+| Project Definition Report (PDF) | `workshop_1/Workshop1_Team2_Report.pdf` |
+| Source profiling notebook (executed) | `notebooks/01_source_profiling.ipynb` |
+| Raw samples and poll comparison | `workshop_1/samples/` |
+| Canonical mapping table | `workshop_1/mapping.md` |
+| First draft ER diagram | `docs/er_diagram.png`, `sql/schema_draft.sql` |
+| Ingestion contract (draft) | `docs/ingestion_contract.md` |
+| Source catalog | `config/sources.yaml` |
+
+The report is written in LaTeX (`report/`). After editing it, compile `report/main.tex` and copy the resulting PDF to `workshop_1/Workshop1_Team2_Report.pdf`. Run `python scripts/make_report_snippets.py` first if the samples changed.
