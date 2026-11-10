@@ -1,7 +1,7 @@
 # Flood Monitoring and Risk - Texas (Team 2)
 
-Data Analysis Programming, 2026-II - Universidad Distrital Francisco José de Caldas
-Professor: Eng. Carlos Andrés Sierra, M.Sc.
+Data Analysis Programming, 2026-III - Universidad Distrital Francisco José de Caldas
+
 
 **Team:** Oscar Durán (20212020080), Laura Pardo (20221020146), Nicolás Romero (20222020023)
 
