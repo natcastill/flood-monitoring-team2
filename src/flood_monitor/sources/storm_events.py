@@ -40,9 +40,11 @@ def download(url: str, dest_dir: Path) -> Path:
         return dest
     resp = get(url, stream=True)
     resp.raise_for_status()
-    with dest.open("wb") as fh:
+    part = dest.with_name(dest.name + ".part")   # a cut download never looks complete
+    with part.open("wb") as fh:
         for chunk in resp.iter_content(1 << 20):
             fh.write(chunk)
+    part.replace(dest)
     return dest
 
 
