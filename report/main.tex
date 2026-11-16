@@ -34,6 +34,7 @@
 % ---------------------------------------------------------------------------
 
 \begin{document}
+\sloppy
 
 \begin{titlepage}
 \centering
@@ -68,7 +69,7 @@ Nicol\'as Romero --- 20222020023\par}
 \section{Hazard Definition}
 
 \subsection{Phenomenon and why it matters}
-A \emph{flood} is an overflow of water onto normally dry land; it can last days or weeks. A \emph{flash flood} is a flood caused by heavy or excessive rainfall in a short period, generally less than six hours \citep{nws_flood_definitions}. Texas combines the conditions for both: intense convective and tropical rainfall, thin soils and steep terrain in the Hill Country, and large urban areas with extensive impervious surfaces (Houston, Dallas--Fort Worth, San Antonio, Austin). Flooding there causes recurrent loss of life (often in vehicles driven into flooded roads) and large property damage, so knowing quickly \emph{where heavy rain is falling now}, \emph{how unusual it is}, and \emph{whether official warnings are active} is valuable for emergency-management decisions.
+A flood is an overflow of water onto normally dry land; it can last days or weeks. A flash flood is a flood caused by heavy or excessive rainfall in a short period, generally less than six hours \citep{nws_flood_definitions}. Texas combines the conditions for both: intense convective and tropical rainfall, thin soils and steep terrain in the Hill Country, and large urban areas with extensive impervious surfaces (Houston, Dallas--Fort Worth, San Antonio, Austin). Flooding there causes recurrent loss of life (often in vehicles driven into flooded roads) and large property damage, so knowing quickly where heavy rain is falling now, how unusual it is, and whether official warnings are active is valuable for emergency-management decisions.
 
 \subsection{How it is measured and severity}
 Flooding has no single physical magnitude comparable to an earthquake's. The system therefore uses three complementary measures, each with explicit units:
@@ -87,8 +88,8 @@ These are mapped to a common ordinal \texttt{severity\_level} 0--3 while keeping
 \end{itemize}
 All four sources cover this scope: Storm Events and NWS alerts are filtered by state, and the selected stations are in Texas.
 
-\subsection{Definition of ``current situation''}
-For this hazard, the current situation is: (1) rainfall in the \textbf{last 24 hours} and \textbf{last 7 days} at each station; (2) the set of \textbf{active NWS flood alerts} for Texas at query time; and (3) the comparison of (1) with the historical distribution for the same station and month. Storm Events is not ``current'': new months appear with several months of delay, so it is used only for history and validation.
+\subsection{Definition of current situation}
+For this hazard, the current situation is: (1) rainfall in the last 24 hours and last 7 days at each station; (2) the set of active NWS flood alerts for Texas at query time; and (3) the comparison of (1) with the historical distribution for the same station and month. Storm Events is not ``current'': new months appear with several months of delay, so it is used only for history and validation.
 
 % ===========================================================================
 \section{Historical Sources}
@@ -120,23 +121,28 @@ Filter used & STATE = TEXAS; EVENT\_TYPE in \{Flood, Flash Flood, Heavy Rain\} &
 
 \subsection{Volume estimate and bulk-load partitioning}\label{sec:volume}
 \begin{itemize}
-  \item \textbf{Storm Events:} \StormFiles\ yearly \texttt{details} files for \StormFirstYear--\StormLastYear\ add up to \StormMB~MB compressed (measured with HTTP \texttt{Content-Length}, \texttt{volume\_estimate.csv}). The \StormYear\ file contains \StormRows\ Texas flood-related rows, so the window holds roughly \StormRowsWindow\ rows after filtering. \textbf{Partition: one year per unit}, which also matches how NOAA re-compiles the data.
+  \item \textbf{Storm Events:} \StormFiles\ yearly \texttt{details} files for \StormFirstYear--\StormLastYear\ add up to \StormMB~MB compressed (measured with HTTP \texttt{Content-Length}, \texttt{volume\_estimate.csv}). The \StormYear\ file contains \StormRows\ Texas flood-related rows. The full download done in Workshop~2 measured the real total: 7{,}468 rows for 2010--2025 plus 532 for 2026 (to date), about 8{,}000 rows after filtering (between 63 rows in 2011, a drought year, and 1{,}244 in 2015). \textbf{Partition: one year per unit}, which also matches how NOAA re-compiles the data.
   \item \textbf{GHCN-Daily:} 5 stations $\times$ 365 days $\times$ 17 years $\approx$ 31{,}000 rows (a few MB of JSON). \textbf{Partition: station $\times$ year} (85 requests), small enough to retry individually.
 \end{itemize}
 
 % ===========================================================================
 \section{Incremental Sources}
 
-\begin{table}[H]\centering\small
+\begin{table}[H]\centering\footnotesize\renewcommand{\arraystretch}{1.2}
 \caption{Incremental sources (both from the NWS API, \citealp{nws_api}).}\label{tab:inc}
-\begin{tabular}{@{}p{3cm}p{6cm}p{6cm}@{}}\toprule
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{2.6cm}>{\raggedright\arraybackslash}p{6.2cm}>{\raggedright\arraybackslash}p{6.2cm}@{}}\toprule
  & \textbf{I1: NWS station observations} & \textbf{I2: NWS alerts}\\\midrule
+Owner & NOAA National Weather Service (NWS) & NOAA National Weather Service (NWS) \\
 URL & \url{https://api.weather.gov/stations/{id}/observations} & \url{https://api.weather.gov/alerts/active?area=TX} (and \texttt{/alerts?area=TX} for recent history) \\
-Authentication & No key; mandatory \texttt{User-Agent} with application and contact (stored in \texttt{.env}) & Same \\
+Access method & REST \texttt{GET}; parameters \texttt{start}, \texttt{end}, \texttt{limit} (max.\ 500); one request per station & REST \texttt{GET}; filters \texttt{area}, \texttt{event}, \texttt{status}, \texttt{message\_type}; history paginated with \texttt{pagination.next} \\
+Authentication & No key; mandatory \texttt{User-Agent} with application and contact (stored in \texttt{.env}) & Same as I1 \\
+Rate limits & Not published; NWS describes it as generous for typical use, and a request over the limit returns an error that can be retried after about 5 s \citep{nws_api}. We poll at most every 15 to 60 min and honor \texttt{Cache-Control} & Same as I1 \\
 Format & GeoJSON; values as \{\texttt{value}, \texttt{unitCode}, \texttt{qualityControl}\} & GeoJSON features with CAP properties \\
-Update frequency & Every 5 minutes at these airports (5-min ASOS reports), plus 15-min and hourly METAR reports; about 7 days retained & Continuous; issued, updated and cancelled at any time \\
-Change detection & \texttt{timestamp} per station; \texttt{start} parameter; HTTP cache headers & Stable \texttt{id} per message; \texttt{sent}; \texttt{messageType} Alert/Update/Cancel and \texttt{references} \\
-License & Public domain & Public domain \\
+Key fields & \texttt{stationId}, \texttt{timestamp}, geometry (lon, lat), \texttt{temperature}, \texttt{relativeHumidity}, \texttt{windSpeed}, \texttt{precipitationLastHour}, \texttt{precipitationLast3Hours}, \texttt{precipitationLast6Hours}, \texttt{textDescription}, \texttt{rawMessage} & \texttt{id}, \texttt{event}, \texttt{messageType}, \texttt{status}, \texttt{severity}, \texttt{certainty}, \texttt{urgency}, \texttt{sent}, \texttt{effective}, \texttt{onset}, \texttt{expires}, \texttt{ends}, \texttt{areaDesc}, \texttt{geocode} (UGC, SAME), \texttt{references}, geometry \\
+Time coverage & Recent days only (our 500-report samples covered 1 to 6 Nov 2026); no long history & Active alerts plus a rolling window of recent alerts (226 alerts in our sample); long-term history comes from Storm Events \\
+Update frequency & Every 5 minutes at these airports (5-min ASOS reports), plus 15-min and hourly METAR reports; published with a 30 to 65 min delay & Continuous; issued, updated and cancelled at any time \\
+Change detection & \texttt{timestamp} per station; \texttt{start} parameter; HTTP cache headers & Stable \texttt{id} per message; \texttt{sent}; \texttt{messageType} (Alert, Update, Cancel) and \texttt{references}; \texttt{ETag} \\
+License / attribution & U.S.\ Government work, public domain; cite \citet{nws_api} & Same as I1 \\
 \bottomrule\end{tabular}
 \end{table}
 
@@ -154,12 +160,12 @@ The incremental sources were polled at \PollFirst\ and \PollLast\ (UTC), at leas
 \paragraph{What changed between the polls (about 66 minutes apart).}
 \begin{itemize}
   \item \textbf{Observations:} each station returned its latest 500 reports both times; 7--8 new timestamps per station appeared and none of the overlapping observations changed. The newest observation was 30--65 minutes old at query time, so data are published with a delay. The responses carry \texttt{Cache-Control: max-age=300} and \texttt{Expires}, but no \texttt{ETag} or \texttt{Last-Modified}: new records must be detected by \texttt{timestamp}, not by HTTP headers.
-  \item \textbf{Alerts:} active alerts for Texas went from 0 to 1 (a new \emph{Flood Advisory} for Nueces County, the county of station KCRP). In the recent-alerts history one new id appeared and one week-old \emph{Flash Flood Warning} was no longer returned: the endpoint is a rolling window, so absence does not mean deletion. The active-alerts \texttt{ETag} changed exactly when the content changed, so it can be used for conditional requests.
+  \item \textbf{Alerts:} active alerts for Texas went from 0 to 1 (a new \emph{Flood Advisory} for Nueces County, the county of station KCRP). In the recent-alerts history one new id appeared and one week-old \emph{Flash Flood Warning} was no longer returned: the endpoint is a rolling window, so absence does not mean deletion. The active-alerts \texttt{ETag} changed together with the content, so it can be used for conditional requests.
 \end{itemize}
 
 \subsection{Revisions, deletions and consequences for the watermark}
 \begin{itemize}
-  \item \textbf{Observations} arrive about every 5 minutes, but only the hourly METAR reports carry \texttt{precipitationLastHour}; values can arrive late or be corrected after quality control; therefore the watermark per station is the last \texttt{timestamp}, and every poll re-reads a 3-hour overlap and upserts by \texttt{(station, timestamp)}.
+  \item \textbf{Observations} arrive about every 5 minutes, but only the hourly METAR reports carry \texttt{precipitation\-Last\-Hour}; values can arrive late or be corrected after quality control; therefore the watermark per station is the last \texttt{timestamp}, and every poll re-reads a 3-hour overlap and upserts by \texttt{(station, timestamp)}.
   \item \textbf{Alerts} are never edited in place: a change is a new message (new \texttt{id}) with \texttt{messageType} Update or Cancel that references previous ids. Alerts also disappear from \texttt{/alerts/active} when they expire. Therefore the system keeps every message, chains them through \texttt{references} into one \texttt{event\_group}, and marks disappeared alerts as inactive instead of deleting them.
   \item \textbf{Storm Events} (slow source) revises whole yearly files; the compile suffix is the watermark, and a changed suffix triggers the re-load of that year.
 \end{itemize}
@@ -225,15 +231,21 @@ NWS alerts & \texttt{/alerts?area=TX} with pagination for recent history & Every
 \subsection{Project overview}
 \begin{itemize}
   \item \textbf{Title:} Flood Monitoring and Risk System for Texas.
-  \item \textbf{Motivation:} flood information for Texas is spread across sources with different formats, time scales and geographic units (bulk CSV by county/zone, daily station totals, hourly observations, CAP alerts by forecast zone). Nobody can see in one place whether today's rain is unusual for a place with a history of flooding.
-  \item \textbf{Goal (data engineering):} build a reproducible, idempotent pipeline that ingests two historical and two incremental sources into one canonical model, with watermarks, change detection, duplicate handling and quarantine. \textbf{Goal (analytics):} compare current rainfall and alerts with the historical rainfall distribution and flood frequency, and compute a Flood Risk Index per county.
-  \item \textbf{Scope:} Texas; 2010--present; rainfall-driven flooding (Flood, Flash Flood, Heavy Rain); five paired stations, extendable through configuration.
+  \item \textbf{Motivation:} flood information for Texas is spread across sources with different formats, time scales and geographic units such as bulk CSV by county/zone, daily station totals, hourly observations or CAP alerts by forecast zone. Nobody can see in one place whether today's rain is unusual for a place with a history of flooding.
+  \item \textbf{Data engineering goal:} build a reproducible and clear pipeline that ingests two historical and two incremental sources into one model suitable for analysis with watermarks, change detection, duplicate handling and quarantine. \textbf{Analytical goal:} compare current rainfall and alerts with the historical rainfall distribution and flood frequency, and record a Flood Risk Index per county.
+  \item \textbf{Scope:} Texas; 2010--present; rainfall-driven flooding  including floods, flash floods and  Heavy Rain. Five paired stations, extendable through configuration.
   \item \textbf{Explicit exclusions:} no flood forecasting or hydrological modeling; no river-gauge (stage/discharge) data; no coastal storm-surge flooding; no real-time public warning service; no counties without a nearby station in the first version.
-  \item \textbf{Constraints:} free and open sources only; NWS requires a User-Agent; Storm Events delay of several months; Docker Compose on a student laptop; three team members; four workshops.
+  \item \textbf{Constraints:} free and open sources only, NWS requires a User-Agent, Storm Events delay of several months, Docker Compose on a student laptop, three team members, four workshops and a tight deadline.
 \end{itemize}
 
 \subsection{Functional user}
-\textbf{Role:} emergency-management analyst at a Texas county or regional office (e.g., Harris County). \textbf{Profile:} follows the weather daily, knows NWS products, is not a programmer, needs answers in minutes. \textbf{Decisions supported:} raise internal readiness, pre-position resources or close low-water crossings, prioritize which counties to watch, and brief officials with evidence. \textbf{Why the dashboard helps:} it puts current rainfall, its historical rarity, past floods in the same county and active alerts on one screen, and states how fresh and complete each source is.
+\textbf{Role:} emergency-management analyst at a Texas county or regional office.\\
+
+\textbf{Profile:} follows the weather daily, knows NWS products, is not a programmer, needs answers in a matter of minutes.\\
+
+\textbf{Decisions supported:} raise internal readiness, pre-position resources or close low-water crossings, prioritize which counties to watch, and brief officials with evidence.\\
+
+\textbf{Why the dashboard helps:} it puts current rainfall, its historical rarity, past floods in the same county and active alerts on one screen, and states how fresh and complete each source is.
 
 \subsection{User stories (MoSCoW)}
 \begin{longtable}{@{}p{0.6cm}p{11.8cm}p{2cm}@{}}\toprule
@@ -243,10 +255,10 @@ US2 & As an emergency analyst, I want to see rainfall in the last 24 hours and 7
 US3 & As an emergency analyst, I want current rainfall compared with the historical percentile for the same station and month so that I can tell whether it is unusual. & Must\\
 US4 & As an emergency analyst, I want a Flood Risk Index (LOW/MEDIUM/HIGH) per county with the inputs that produced it so that I can prioritize counties and justify the decision. & Must\\
 US5 & As an emergency analyst, I want to see when each source was last updated and how many records were rejected so that I know how fresh and complete the data is. & Must\\
-US6 & As an emergency analyst, I want to see what is new since my last visit (new alerts, updates, cancellations) so that I do not miss changes. & Should\\
-US7 & As a risk researcher, I want the historical flood frequency and damage per county since 2010 so that I can identify recurrently affected areas. & Should\\
-US8 & As a risk researcher, I want to see which records from different sources were grouped as the same event so that I can trust the integration. & Could\\
-US9 & As an emergency analyst, I want an e-mail notification when a county turns HIGH. & Won't (this semester)\\
+
+US6 & As a risk researcher, I want the historical flood frequency and damage per county since 2010 so that I can identify recurrently affected areas. & Should\\
+US7 & As a risk researcher, I want to see which records from different sources were grouped as the same event so that I can trust the integration. & Could\\
+
 \bottomrule\end{longtable}
 
 \subsection{Indicator proposal: Flood Risk Index}
@@ -255,7 +267,7 @@ US9 & As an emergency analyst, I want an e-mail notification when a county turns
 \textbf{Rule (preliminary):}
 \begin{align*}
 \text{rain\_level} &= \begin{cases} 3 & P_{24} \geq 99 \text{ or } R_{24} \geq 75\text{ mm}\\ 2 & P_{24} \geq 95 \text{ or } R_{7d} \geq 100\text{ mm}\\ 1 & P_{24} \geq 90 \\ 0 & \text{otherwise}\end{cases}\\
-\text{score} &= \max(A, \text{rain\_level}) + \mathbb{1}[F \text{ in the top quartile of Texas counties}]
+\text{score} &= \max(A, \text{rain\_level}) + \mathbf{1}[F \text{ in the top quartile of Texas counties}]
 \end{align*}
 \textbf{Output scale:} LOW (score 0--1), MEDIUM (2), HIGH ($\geq$3), shown together with its inputs and the freshness of each source. The index is a \emph{monitoring} aid, not a prediction of flooding.
 
@@ -274,7 +286,7 @@ License / attribution & Non-compliance & All sources public domain; attribution 
 \bottomrule\end{longtable}
 
 \subsection{Architecture overview}
-Figure~\ref{fig:arch} adapts the reference architecture of the course project \citep{sierra2026project}: sources $\rightarrow$ raw landing zone $\rightarrow$ normalize/validate/deduplicate $\rightarrow$ PostgreSQL/PostGIS (with quarantine) $\rightarrow$ analytics and indicator $\rightarrow$ Plotly Dash. Everything runs with Docker Compose; Apache Airflow schedules the incremental polls.
+Figure~\ref{fig:arch} adapts the reference architecture of the course project: sources $\rightarrow$ raw landing zone $\rightarrow$ normalize/validate/deduplicate $\rightarrow$ storage (with quarantine) $\rightarrow$ analytics and indicator $\rightarrow$ Plotly Dash dashboard.
 
 \begin{figure}[H]\centering
 \includegraphics[width=\textwidth]{figures/architecture.pdf}
