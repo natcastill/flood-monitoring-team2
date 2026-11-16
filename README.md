@@ -67,3 +67,22 @@ report/                LaTeX source of the report (main.tex, references.bib, fig
 | Source catalog | `config/sources.yaml` |
 
 The report is written in LaTeX (`report/`). After editing it, compile `report/main.tex` and copy the resulting PDF to `workshop_1/Workshop1_Team2_Report.pdf`. Run `python scripts/make_report_snippets.py` first if the samples changed.
+
+## Quick start (Workshop 2 - Historical Ingestion & PostgreSQL)
+See [`workshop_2/README.md`](workshop_2/README.md) for full architecture and schema details.
+```bash
+psql -h localhost -U flood -d flood_monitor -f sql/schema.sql
+python ingest.py --mode historical --start 2024-01-01 --end 2024-12-31
+python ingest.py --mode status
+pytest -v
+```
+
+## Workshop 2 deliverables
+| Deliverable | Location |
+|---|---|
+| Workshop 2 guide & architecture | `workshop_2/README.md` |
+| Canonical PostgreSQL schema | `sql/schema.sql` |
+| Normalization & unit-conversion module | `src/flood_monitor/normalization.py` |
+| Idempotent PostgreSQL storage layer | `src/flood_monitor/storage.py` |
+| Historical ingestion CLI (`--mode historical`, `--mode status`) | `ingest.py` |
+| Automated unit & idempotency tests | `tests/test_normalization.py`, `tests/test_storage.py` |
