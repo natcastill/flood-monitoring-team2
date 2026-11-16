@@ -14,3 +14,5 @@ report/*.out
 report/*.toc
 report/*.fdb_latexmk
 report/*.fls
+report/main.pdf
+workshop_2/report/main.pdf
