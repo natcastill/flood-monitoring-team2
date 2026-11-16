@@ -4,3 +4,7 @@ pyyaml>=6.0
 matplotlib>=3.8
 jupyter>=1.0
 dash>=2.16
+apache-airflow==2.10.2
+beautifulsoup4==4.12.3
+pyarrow==18.0.0
+python-dotenv==1.0.1

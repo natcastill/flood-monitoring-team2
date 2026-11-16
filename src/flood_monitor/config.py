@@ -47,3 +47,45 @@ def nws_user_agent() -> str:
             "NWS_USER_AGENT=(ud-flood-monitor-team2, your.email@udistrital.edu.co)"
         )
     return ua
+
+
+# ==============================================================================
+# Workshop 2: Medallion Data Lake & Airflow Pipeline Configuration
+# ==============================================================================
+
+BRONZE_DIR = "/opt/airflow/datalake_bronze"
+SILVER_DIR = "/opt/airflow/datalake_silver"
+
+NWS_USER_AGENT = os.getenv(
+    "NWS_USER_AGENT",
+    "(flood-monitoring-team2, nromeror@udistrital.edu.co)"
+)
+
+# 5 Texas paired stations (NWS ID -> GHCN ID, County, Lat, Lon)
+TEXAS_STATIONS = {
+    "KIAH": {"ghcn_id": "USW00012960", "name": "Houston IAH", "county": "Harris", "lat": 29.9844, "lon": -95.3607},
+    "KAUS": {"ghcn_id": "USW00013904", "name": "Austin-Bergstrom", "county": "Travis", "lat": 30.1831, "lon": -97.6799},
+    "KSAT": {"ghcn_id": "USW00012921", "name": "San Antonio", "county": "Bexar", "lat": 29.5337, "lon": -98.4698},
+    "KDFW": {"ghcn_id": "USW00003927", "name": "Dallas-Fort Worth", "county": "Tarrant", "lat": 32.8974, "lon": -97.0220},
+    "KCRP": {"ghcn_id": "USW00012924", "name": "Corpus Christi", "county": "Nueces", "lat": 27.7742, "lon": -97.5122},
+}
+
+# Flood-related NWS event filter (Problem #11 in Workshop 1)
+FLOOD_ALERT_EVENTS = {
+    "Flood Warning",
+    "Flood Watch",
+    "Flood Advisory",
+    "Flood Statement",
+    "Flash Flood Warning",
+    "Flash Flood Watch",
+    "Flash Flood Statement",
+    "Hydrologic Outlook",
+}
+
+# Texas WGS84 Bounding Box
+TX_BBOX = {
+    "min_lat": 25.8,
+    "max_lat": 36.5,
+    "min_lon": -106.65,
+    "max_lon": -93.5,
+}
