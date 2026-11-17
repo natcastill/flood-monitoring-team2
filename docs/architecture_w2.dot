@@ -1,0 +1,35 @@
+digraph A {
+  graph [rankdir=LR, fontname="Helvetica", nodesep=0.2, ranksep=0.35, compound=true];
+  node [shape=box, style="rounded,filled", fillcolor="#eef3f8", fontname="Helvetica", fontsize=9];
+  edge [fontname="Helvetica", fontsize=7.5];
+  subgraph cluster_src { label="Data sources (HTTPS)"; fontsize=9; style=dashed; color="#888888";
+    al [label="NWS API alerts\nGeoJSON (REST)"];
+    ob [label="NWS API observations\nGeoJSON (REST)"];
+    sc [label="NCEI Storm Events directory\nHTML (web scraping)"];
+    se [label="Storm Events yearly\nCSV.gz details"];
+    gh [label="GHCN-Daily (NCEI ADS)\nJSON (REST)"];
+  }
+  subgraph cluster_docker { label="Docker Compose stack (host: student laptop)"; fontsize=9; color="#4a7ab5";
+    subgraph cluster_af { label="Apache Airflow 2.10.2 (LocalExecutor)"; fontsize=8.5; style="rounded,filled"; fillcolor="#fffaf0"; color="#d6b656";
+      web [label="webserver\nUI :8080", fillcolor="#fff2cc"];
+      sch [label="scheduler", fillcolor="#fff2cc"];
+      trg [label="triggerer", fillcolor="#fff2cc"];
+      bdag [label="bronze_flood_ingestion_dag  */15 min\nextract (API + scraping) -> validate -> persist", fillcolor="#ffe599"];
+      sdag [label="silver_flood_processing_dag  */10 min\nFileSensor -> discover -> transform & persist", fillcolor="#ffe599"];
+    }
+    pg [label="PostgreSQL 15\nAirflow metadata DB", fillcolor="#d9d2e9"];
+  }
+  subgraph cluster_lake { label="Data lake (host folders mounted as volumes)"; fontsize=9; color="#6aa84f";
+    bronze [label="datalake_bronze/\ntexas_flood_sources_YYYYMMDD_HHMMSS.json\none raw document per run", fillcolor="#f4e1c1"];
+    silver [label="datalake_silver/\n<topic>_YYYYMMDD_HHMMSS_from_<bronze>.parquet\n+ _manifest.jsonl, _registry/", fillcolor="#e6e6e6"];
+    gold [label="datalake_gold/\n(planned, Workshop 3: PySpark)", fillcolor="#fff2cc", style="rounded,dashed,filled"];
+  }
+  dash [label="Plotly Dash dashboard\n(planned, Workshop 4)", style="rounded,dashed,filled", fillcolor="#d0e0f0"];
+  al -> bdag; ob -> bdag; sc -> bdag; se -> bdag; gh -> bdag;
+  sch -> bdag [style=dashed, arrowhead=none]; sch -> sdag [style=dashed, arrowhead=none];
+  web -> pg [dir=both, arrowsize=0.6]; sch -> pg [dir=both, arrowsize=0.6]; trg -> pg [dir=both, arrowsize=0.6];
+  bdag -> bronze [label="validated JSON"];
+  bronze -> sdag [label="FileSensor\n*.json", style=bold];
+  sdag -> silver [label="Pandas + PyArrow"];
+  silver -> gold [style=dashed]; gold -> dash [style=dashed];
+}

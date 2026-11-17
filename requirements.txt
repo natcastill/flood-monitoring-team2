@@ -1,10 +1,12 @@
+# Local development (Workshop 1 scripts, notebooks, tests). Airflow itself runs in Docker
+# (see Dockerfile and requirements-airflow.txt).
 requests>=2.31
 pandas>=2.1
+pyarrow>=14
 pyyaml>=6.0
+beautifulsoup4>=4.12
+python-dotenv>=1.0
 matplotlib>=3.8
 jupyter>=1.0
 dash>=2.16
-apache-airflow==2.10.2
-beautifulsoup4==4.12.3
-pyarrow==18.0.0
-python-dotenv==1.0.1
+pytest>=8

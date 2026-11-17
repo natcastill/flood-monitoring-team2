@@ -1,9 +1,13 @@
+# Flood Monitoring and Risk (Team 2) - local Airflow stack
+#   cp .env.example .env   (Windows: copy .env.example .env) and fill it in
+#   docker compose up -d --build   ->  Airflow UI at http://localhost:8080
 x-airflow-common: &airflow-common
   build: .
+  image: flood-monitor-airflow:2.10.2
+  env_file: .env
   environment: &airflow-common-env
-    AIRFLOW__WEBSERVER__SECRET_KEY: "super_secret_key_flood_monitor_team2_2026"
-    AIRFLOW__CORE__SECRET_KEY: "super_secret_key_flood_monitor_team2_2026"
-    AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "true"
+    AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW_SECRET_KEY:-change-me-in-env}
+    AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "false"
     AIRFLOW__CORE__EXECUTOR: LocalExecutor
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
     AIRFLOW__CORE__FERNET_KEY: ''
@@ -11,11 +15,13 @@ x-airflow-common: &airflow-common
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session'
     PYTHONPATH: /opt/airflow/src
-    NWS_USER_AGENT: ${NWS_USER_AGENT:-flood-monitoring-team2-udistrital}
     AIRFLOW_CONN_FS_DEFAULT: '{"conn_type": "fs", "extra": {"path": "/opt/airflow"}}'
   volumes:
     - ./airflow/dags:/opt/airflow/dags
     - ./src:/opt/airflow/src
+    - ./config:/opt/airflow/config
+    - ./data:/opt/airflow/data
+    - ./airflow/logs:/opt/airflow/logs
     - ./datalake_bronze:/opt/airflow/datalake_bronze
     - ./datalake_silver:/opt/airflow/datalake_silver
     - ./datalake_gold:/opt/airflow/datalake_gold
@@ -54,7 +60,7 @@ services:
           --lastname FloodMonitor \
           --role Admin \
           --email team2@udistrital.edu.co \
-          --password admin
+          --password "${AIRFLOW_ADMIN_PASSWORD:-admin}" || true
 
   airflow-webserver:
     <<: *airflow-common

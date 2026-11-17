@@ -53,13 +53,16 @@ def nws_user_agent() -> str:
 # Workshop 2: Medallion Data Lake & Airflow Pipeline Configuration
 # ==============================================================================
 
-BRONZE_DIR = "/opt/airflow/datalake_bronze"
-SILVER_DIR = "/opt/airflow/datalake_silver"
+# Inside Docker the project root is /opt/airflow; outside Docker it is the repository root.
+LAKE_ROOT = Path(os.getenv("FLOOD_PROJECT_ROOT", "/opt/airflow" if Path("/opt/airflow").exists() else ROOT))
+BRONZE_DIR = str(LAKE_ROOT / "datalake_bronze")
+SILVER_DIR = str(LAKE_ROOT / "datalake_silver")
+GOLD_DIR = str(LAKE_ROOT / "datalake_gold")
+STATE_DIR = str(LAKE_ROOT / "datalake_bronze" / "_state")   # watermarks (Storm Events compile suffixes)
+RAW_CACHE_DIR = str(LAKE_ROOT / "data" / "raw")              # full Storm Events yearly files (git-ignored)
 
-NWS_USER_AGENT = os.getenv(
-    "NWS_USER_AGENT",
-    "(flood-monitoring-team2, nromeror@udistrital.edu.co)"
-)
+# Comes from .env (see .env.example); the fallback carries no personal data.
+NWS_USER_AGENT = os.getenv("NWS_USER_AGENT", "(ud-flood-monitor-team2, Universidad Distrital course project)")
 
 # 5 Texas paired stations (NWS ID -> GHCN ID, County, Lat, Lon)
 TEXAS_STATIONS = {

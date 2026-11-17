@@ -1,0 +1,8 @@
+# Installed into the Airflow image (see Dockerfile). Versions come from the Airflow constraints.
+requests
+beautifulsoup4
+pandas
+pyarrow
+polars
+pyyaml
+python-dotenv

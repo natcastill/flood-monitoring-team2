@@ -1,0 +1,11 @@
+\begin{table}[H]\centering\footnotesize
+\caption{Silver Parquet files (\texttt{<topic>\_<processing time>\_from\_<Bronze file>.parquet}).}\label{tab:silver}
+\begin{tabular}{@{}llllrrr@{}}\toprule
+Topic & Processed (UTC) & From Bronze & Rows & Skipped (already in Silver) & KB\\\midrule
+\texttt{daily\_precipitation} & 20261116\_234551 & 20261116\_233000 & 124 & 0 & 16\\
+\texttt{daily\_precipitation} & 20261117\_000251 & 20261117\_000000 & 30,662 & 124 & 2,320\\
+\texttt{flood\_events} & 20261116\_234551 & 20261116\_233000 & 8,000 & 0 & 3,182\\
+\texttt{nws\_alerts} & 20261116\_234551 & 20261116\_233000 & 60 & 0 & 33\\
+\texttt{nws\_observations} & 20261116\_234551 & 20261116\_233000 & 82 & 0 & 15\\
+\texttt{nws\_observations} & 20261117\_000251 & 20261117\_000000 & 6 & 78 & 9\\
+\bottomrule\end{tabular}\end{table}

@@ -16,3 +16,9 @@ report/*.fdb_latexmk
 report/*.fls
 report/main.pdf
 workshop_2/report/main.pdf
+
+# Airflow
+airflow/logs/*
+!airflow/logs/.gitkeep
+data/raw/**/*.part
+*.tmp
