@@ -1,299 +1,426 @@
-\documentclass[11pt,letterpaper]{article}
+% PLANTILLA APA7
+% Creado por: Isaac Palma Medina
+% Última actualización: 25/07/2021
+% @COPYLEFT
+
+% Fuentes consultadas (todos los derechos reservados):
+% Normas APA. (2019). Guía Normas APA. https://normas-apa.org/wp-content/uploads/Guia-Normas-APA-7ma-edicion.pdf
+% Tecnológico de Costa Rica [Richmond]. (2020, 16 abril). LaTeX desde cero con Overleaf (1 de 3) [Vídeo]. YouTube. https://www.youtube.com/watch?v=kM1KvHVuaTY Weiss, D. (2021).
+% Formatting documents in APA style (7th Edition) with the apa7 LATEX class. https://ctan.math.washington.edu/tex-archive/macros/latex/contrib/apa7/apa7.pdf @COPYLEFT
+
+%+-+-+-+-++-+-+-+-+-+-+-+-+-++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-++-+-+-+-+-+-+-+-+-+
+
+% Preámbulo
+\documentclass[stu, 12pt, letterpaper, donotrepeattitle, floatsintext, natbib]{apa7}
 \usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
-\usepackage{lmodern}
-\usepackage[margin=2.5cm]{geometry}
-\usepackage{graphicx,booktabs,longtable,array,float,xcolor,enumitem,amsmath,amssymb}
+\usepackage{comment}
+\usepackage{marvosym}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[normalem]{ulem}
+\usepackage[english]{babel}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{amsmath}
 \usepackage{listings}
-\usepackage[hidelinks]{hyperref}
-\usepackage{url}
-\usepackage[round,authoryear]{natbib}
-\bibliographystyle{apalike}
-\setlength{\parskip}{4pt}
-\setlist{nosep,leftmargin=1.4em}
-\lstset{basicstyle=\ttfamily\scriptsize, breaklines=true, frame=single,
-        backgroundcolor=\color{gray!6}, columns=fullflexible, showstringspaces=false}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds}
 
-% Values filled by scripts/make_w2_report_assets.py (generated/macros.tex)
-\newcommand{\fillin}[1]{\textcolor{red}{\textbf{[#1]}}}
-\newcommand{\BronzeFiles}{\fillin{N}} \newcommand{\SilverFiles}{\fillin{N}}
-\newcommand{\BronzeMB}{\fillin{MB}}   \newcommand{\SilverMB}{\fillin{MB}}
-\newcommand{\EventsRows}{\fillin{N}}  \newcommand{\PrecipRows}{\fillin{N}}
-\newcommand{\ObsRows}{\fillin{N}}     \newcommand{\AlertRows}{\fillin{N}}
-\newcommand{\PrecipMissingPct}{\fillin{N}}
-\newcommand{\TopTerms}{\fillin{terms}}
-\InputIfFileExists{generated/macros.tex}{}{}
-\newcommand{\gen}[1]{\IfFileExists{generated/#1}{\input{generated/#1}}{\fillin{run scripts/make\_w2\_report\_assets.py}}}
-% Screenshots: put the PNG files in screenshots/ with these names and recompile.
-\newcommand{\shot}[3]{\begin{figure}[H]\centering
-  \IfFileExists{screenshots/#1}{\includegraphics[width=#3\textwidth]{screenshots/#1}}%
-  {\fbox{\parbox{0.9\textwidth}{\centering\vspace{1.2cm}\textcolor{red}{\textbf{Screenshot pending:} \texttt{screenshots/\detokenize{#1}}}\\[2pt]\small #2\vspace{1.2cm}}}}
-  \caption{#2}\end{figure}}
-\newcommand{\repo}{\url{https://github.com/natcastill/flood-monitoring-team2}}
-
-\begin{document}
+\useunder{\uline}{\ul}{}
+\hypersetup{hidelinks}
+\newcommand{\myparagraph}[1]{\paragraph{#1}\mbox{}\\}
 \sloppy
 
-\begin{titlepage}
-\centering
-\vspace*{1.5cm}
-{\large Universidad Distrital Francisco Jos\'e de Caldas\\School of Engineering \par}
-\vspace{1.2cm}
-{\large Data Analysis Programming \\2026-III\par}
-\vspace{1.5cm}
-{\LARGE\bfseries Flood Monitoring and Risk (Texas)\par}
-\vspace{0.4cm}
-{\Large Workshop No.~2: Technical Architecture and Bronze/Silver Pipeline\par}
-\vspace{0.4cm}
-{\large Technical Architecture and Pipeline Report --- Team 2\par}
-\vspace{1.8cm}
-{\large Oscar Dur\'an --- 20212020080\\ Laura Natalia Pardo --- 20221020146\\ Nicol\'as Romero --- 20222020023\par}
-\vspace{1.5cm}
-{\large Professor: Carlos Andr\'es Sierra\par}
-\vfill
-{\large Bogot\'a, D.C., November 2026\par}
-\vspace{0.4cm}
-{Repository: \repo\par}
-\end{titlepage}
+% Configuración para bloques de código
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  breaklines=true,
+  frame=single,
+  backgroundcolor=\color{gray!8},
+  rulecolor=\color{gray!40},
+  xleftmargin=6pt,
+  xrightmargin=6pt
+}
 
+% Airflow screenshots of the current version: put the PNG files in screenshots/ and recompile.
+\newcommand{\shot}[2]{\begin{figure}[H]\centering\caption{#2}
+  \IfFileExists{screenshots/#1}{\includegraphics[width=0.95\textwidth]{screenshots/#1}}%
+  {\fbox{\parbox{0.9\textwidth}{\centering\vspace{1cm}\textcolor{red}{\textbf{Screenshot pending:} \texttt{screenshots/\detokenize{#1}}}\vspace{1cm}}}}
+  \end{figure}}
+
+% Portada
+\thispagestyle{empty}
+\title{\Large Technical Architecture and Bronze/Silver Pipeline \\ \large Workshop No. 2: Flood Monitoring and Risk System (Texas, USA)}
+\author{Oscar Durán (20212020080) \\ Laura Natalia Pardo (20221020146) \\ Nicolás Romero (20222020023)}
+\affiliation{Universidad Distrital Francisco José de Caldas}
+\course{Data Analysis Programming (2026-III)}
+\professor{Carlos Andrés Sierra}
+\duedate{Bogotá, D.C., November 2026}
+
+\begin{document}
+\maketitle
+
+% Índices
+\pagenumbering{roman}
+\renewcommand\contentsname{\large Contents}
 \tableofcontents
+\setcounter{tocdepth}{2}
 \newpage
 
-% ===========================================================================
-\section{Executive Summary}
-Workshop~1 defined a flood-monitoring system for Texas fed by NOAA Storm Events and GHCN-Daily (historical) and by the NWS observation and alert endpoints (incremental). This workshop turns that design into a running, containerized pipeline that follows the medallion pattern required by the course \citep{sierra2026w2}.
+% Cuerpo
+\pagenumbering{arabic}
 
+\noindent \textbf{Team 2 Members:} Oscar Durán (20212020080), Laura Natalia Pardo (20221020146), Nicolás Romero (20222020023) \\
+\textbf{Professor:} Eng. Carlos Andrés Sierra, M.Sc. \\
+\textbf{Location \& Date:} Bogotá, D.C., November 2026 \\
+\textbf{GitHub Repository:} \url{https://github.com/natcastill/flood-monitoring-team2}
+
+\section{\large 1. Executive Summary}
+This report documents the technical architecture, the containerized infrastructure and the Medallion (Bronze/Silver) data pipeline of the Flood Monitoring and Risk System for Texas. It builds directly on the hazard definition, source profiling and data contract of Workshop No.~1. Team~2 turned that conceptual data flow into a reproducible local platform, orchestrated by Apache Airflow 2.10.2 and Docker Compose \citep{apache2026, docker2026}.
+
+The pipeline ingests four sources for five paired first-order stations in Texas (Houston IAH, Austin-Bergstrom, San Antonio, Dallas-Fort Worth and Corpus Christi) and for the whole state:
 \begin{itemize}
-  \item \textbf{Stack.} Docker Compose runs Apache Airflow~2.10.2 (webserver, scheduler, triggerer, LocalExecutor) with a PostgreSQL~15 metadata database. A custom image installs the project dependencies with the official Airflow constraints. The DAG folder, the source package and the three data-lake layers are mounted as volumes, so outputs survive container restarts and DAG edits are picked up live.
-  \item \textbf{Bronze.} \texttt{bronze\_flood\_ingestion\_dag} is written with the TaskFlow API and runs every 15 minutes.
-  \begin{itemize}
-    \item \emph{API extraction:} NWS alerts (every run) and observations of the five paired stations (hourly).
-    \item \emph{Web scraping:} BeautifulSoup reads the NCEI Storm Events directory and extracts each yearly file's compile watermark.
-    \item \emph{Daily pulls:} the Storm Events details of the files whose watermark changed, and the last 30 days of GHCN-Daily.
-  \end{itemize}
-  A validation task checks every payload, and a persistence task writes one raw JSON document per run, \texttt{texas\_flood\_sources\_YYYYMMDD\_HHMMSS.json}.
-  \item \textbf{Silver.} \texttt{silver\_flood\_processing\_dag} starts with a \texttt{FileSensor} on \texttt{datalake\_bronze/}. It processes the Bronze files that are not yet in the Silver manifest, applying the preprocessing pipeline with Pandas: types, nulls, physical ranges, IQR and $Z$-score outlier flags, NLP text cleaning, de-duplication inside and across batches, and schema enforcement. It writes one Parquet file per topic and Bronze file, \texttt{<topic>\_YYYYMMDD\_HHMMSS\_from\_<bronze>.parquet}.
-  \item \textbf{Results.} Three Bronze runs produced \BronzeFiles\ JSON files (\BronzeMB~MB), and the Silver runs produced \SilverFiles\ Parquet files (\SilverMB~MB) with \EventsRows\ flood events, \PrecipRows\ station-days, \ObsRows\ observations and \AlertRows\ flood alerts. A Silver run over data already in Silver wrote nothing, which demonstrates idempotency.
-  \item \textbf{How we got here.} The first version of the DAGs ran in Docker and produced 12 Bronze and 22 Silver files. Reviewing its output showed two problems: 89\% of the observation rows were repeated across files, and missing rainfall had been filled with 0~mm. It also lacked GHCN-Daily and the Storm Events records. This report documents the corrected second version (Section~\ref{sec:challenges}).
+    \item NWS station observations and NWS flood alerts, through the NWS REST API \citep{nws2026};
+    \item the NOAA Storm Events directory, scraped with BeautifulSoup4 to obtain each yearly file's compile watermark, together with the Texas flood records of the files whose watermark changed \citep{noaa2026};
+    \item GHCN-Daily precipitation, through the NCEI Access Data Service \citep{menne2012}.
 \end{itemize}
 
-% ===========================================================================
-\section{Technical Architecture}
+\textbf{Bronze layer.} A TaskFlow DAG runs every 15 minutes. Each source follows its own cadence from the Workshop No.~1 contract: alerts on every run, observations hourly, and GHCN-Daily and Storm Events details daily. A separate task validates every payload, and another task persists one raw JSON document per run in \texttt{datalake\_bronze/}.
 
-\subsection{Architecture diagram}
-\begin{figure}[H]\centering
-\includegraphics[width=\textwidth]{figures/architecture_w2.pdf}
-\caption{System components, data flows and layer boundaries. Dashed elements are planned for Workshops 3--4.}\label{fig:arch}
+\textbf{Silver layer.} A sensor-driven DAG detects new Bronze files with Airflow's \texttt{FileSensor}. It then:
+\begin{itemize}
+    \item converts every timestamp to UTC;
+    \item keeps missing rainfall as \texttt{NULL} with an explicit flag;
+    \item removes physically impossible values and flags statistical outliers (IQR and $Z$-score);
+    \item cleans the narrative text for NLP (tokenization and stop-word removal);
+    \item removes duplicates inside each batch and across batches;
+    \item enforces a fixed schema per topic.
+\end{itemize}
+The result is written as Snappy-compressed Apache Parquet in \texttt{datalake\_silver/}, with full lineage to the Bronze file.
+
+\textbf{Results.} Three Bronze runs (25.0~MB of JSON) produced six Parquet files (5.7~MB) with 8,000 Storm Events records (2010--2026), 30,786 GHCN-Daily station-days, 88 observations and 60 flood alerts. A Silver run over data that was already in Silver wrote nothing, which shows that the pipeline is idempotent.
+
+\textbf{Development.} A first version of both DAGs ran in Docker (Section~7). Reviewing its outputs led to the corrections described in this report: complete source coverage, cross-batch de-duplication, null handling without zero-filling, statistical outlier flags and NLP text processing.
+
+\section{\large 2. Technical Architecture Definition}
+The system follows a four-stage Medallion architecture (Bronze, Silver, planned Gold and planned Analytics Dashboard). It separates raw ingestion from domain transformation and analytical aggregation. Figure~\ref{fig:medallion_arch} shows the components, execution boundaries and storage contracts of each layer.
+
+\begin{figure}[H]
+    \centering
+    \caption{Medallion technical architecture showing ingestion, Bronze landing, sensor-triggered Silver transformation, and planned Gold/Dashboard layers.}
+    \label{fig:medallion_arch}
+    \resizebox{\textwidth}{!}{%
+    \begin{tikzpicture}[
+        node distance=0.45cm and 0.9cm,
+        box/.style={draw=black!70, rounded corners=3pt, align=center, font=\scriptsize, fill=white, minimum width=3.4cm, minimum height=1.05cm, inner sep=4pt},
+        bronzebox/.style={draw=yellow!65!black, thick, rounded corners=3pt, align=center, font=\scriptsize, fill=yellow!15, minimum width=3.7cm, minimum height=1.35cm, inner sep=4pt},
+        silverbox/.style={draw=cyan!65!black, thick, rounded corners=3pt, align=center, font=\scriptsize, fill=cyan!12, minimum width=3.7cm, minimum height=1.35cm, inner sep=4pt},
+        goldbox/.style={draw=black!60, rounded corners=3pt, align=center, font=\scriptsize, fill=white, minimum width=3.1cm, minimum height=1.35cm, inner sep=4pt},
+        group/.style={draw, rounded corners=5pt, inner sep=8pt, label={[font=\scriptsize\bfseries]above:#1}}
+    ]
+        % Column 1: External Sources
+        \node[box] (nws_obs) {\textbf{NWS Observations API}\\5 TX Stations (GeoJSON)};
+        \node[box, below=of nws_obs] (nws_alerts) {\textbf{NWS Alerts API}\\area=TX (CAP GeoJSON)};
+        \node[box, below=of nws_alerts] (noaa_storm) {\textbf{NOAA Storm Events}\\HTML index (scraping)\\+ yearly CSV.gz};
+        \node[box, below=of noaa_storm] (ghcnd) {\textbf{GHCN-Daily (NCEI ADS)}\\Daily PRCP (JSON)};
+
+        % Column 2: Bronze Layer
+        \node[box, draw=yellow!65!black, thick, right=1.1cm of nws_alerts, yshift=0.6cm, minimum width=3.9cm, minimum height=1.45cm] (bronze_dag) {\textbf{bronze\_flood\_ingestion\_dag}\\TaskFlow (\texttt{@dag/@task}) $\cdot$ Cron \texttt{*/15}\\extract $\rightarrow$ validate $\rightarrow$ persist};
+        \node[bronzebox, below=0.65cm of bronze_dag] (bronze_vol) {\textbf{datalake\_bronze/ (Volume)}\\Raw JSON, one file per run\\\texttt{texas\_flood\_sources\_TS.json}};
+
+        % Column 3: Silver Layer
+        \node[box, draw=cyan!65!black, thick, right=1.1cm of bronze_dag, minimum width=3.9cm, minimum height=1.45cm] (silver_dag) {\textbf{silver\_flood\_processing\_dag}\\FileSensor (reschedule, 60 s) + Pandas\\UTC, Nulls, IQR/Z, NLP, Dedupe, Schema};
+        \node[silverbox, below=0.65cm of silver_dag] (silver_vol) {\textbf{datalake\_silver/ (Volume)}\\Typed Snappy Parquet, 4 topics\\\texttt{<topic>\_TS\_from\_SRC.parquet}};
+
+        % Column 4: Gold & UI
+        \node[goldbox, right=1.1cm of silver_dag] (gold_layer) {\textbf{Gold Layer}\\PySpark\\Flood Risk Index};
+        \node[goldbox, below=0.65cm of gold_layer] (plotly_ui) {\textbf{Plotly Dash}\\localhost:8050\\County Alert Map};
+
+        % Containers (Backgrounds)
+        \begin{pgfonlayer}{background}
+            \node[group={1. External Sources}, draw=gray!70, fill=gray!5, fit=(nws_obs)(nws_alerts)(noaa_storm)(ghcnd)] {};
+            \node[group={2. Bronze Layer (Airflow DAG 1)}, draw=yellow!65!black, thick, fill=yellow!5, fit=(bronze_dag)(bronze_vol)] {};
+            \node[group={3. Silver Layer (Airflow DAG 2)}, draw=cyan!65!black, thick, fill=cyan!4, fit=(silver_dag)(silver_vol)] {};
+            \node[group={4. Gold \& UI (Plan)}, draw=gray!70, dashed, thick, fill=gray!5, fit=(gold_layer)(plotly_ui)] {};
+        \end{pgfonlayer}
+
+        % Connections
+        \draw[-{Stealth[scale=0.8]}, thick, black!70] (nws_obs.east) -- (bronze_dag.165);
+        \draw[-{Stealth[scale=0.8]}, thick, black!70] (nws_alerts.east) -- (bronze_dag.180);
+        \draw[-{Stealth[scale=0.8]}, thick, black!70] (noaa_storm.east) -- (bronze_dag.195);
+        \draw[-{Stealth[scale=0.8]}, thick, black!70] (ghcnd.east) -- (bronze_dag.210);
+        \draw[-{Stealth[scale=0.8]}, thick, yellow!65!black] (bronze_dag.south) -- (bronze_vol.north);
+        \draw[-{Stealth[scale=0.8]}, thick, cyan!65!black] (bronze_vol.east) -- (silver_dag.west);
+        \draw[-{Stealth[scale=0.8]}, thick, cyan!65!black] (silver_dag.south) -- (silver_vol.north);
+        \draw[-{Stealth[scale=0.8]}, thick, black!70] (silver_vol.east) -- (gold_layer.west);
+        \draw[dashed, thick, black!60] (gold_layer.south) -- (plotly_ui.north);
+    \end{tikzpicture}%
+    }
+    \note{Schematic representation of the Medallion architecture implemented by Team~2. All Airflow services (webserver, scheduler, triggerer) and the PostgreSQL metadata database run in Docker Compose (Section~4).}
 \end{figure}
 
-\subsection{Components}
-\begin{longtable}{@{}p{2.5cm}p{3.1cm}p{2.4cm}p{3.1cm}p{3.5cm}@{}}
-\caption{Purpose, technology, inputs, outputs and interactions of each component.}\label{tab:components}\\
-\toprule Component & Purpose & Technology & Inputs $\rightarrow$ Outputs & Interactions\\\midrule\endhead
-NWS API & Current observations and alerts & REST, GeoJSON & --- $\rightarrow$ JSON responses & Needs a \texttt{User-Agent} \citep{nws_api}; called by the Bronze DAG\\
-NCEI Storm Events directory & Yearly files and their compile dates & HTML page (web scraping), CSV.gz files & --- $\rightarrow$ HTML, CSV & Scraped every run; files downloaded only when their watermark changes\\
-NCEI Access Data Service & GHCN-Daily rainfall & REST, JSON & --- $\rightarrow$ JSON & One request per station (and per year in a backfill)\\
-Airflow scheduler & Triggers DAG runs and runs tasks & Airflow 2.10.2, LocalExecutor & DAG files $\rightarrow$ task runs & Reads the mounted DAG folder; writes state to PostgreSQL\\
-Airflow webserver & Monitoring, manual triggers, logs & Airflow UI, port 8080 & metadata DB $\rightarrow$ web UI & Reads and writes the metadata DB\\
-Airflow triggerer & Runs deferrable operators & Airflow triggerer & deferred tasks $\rightarrow$ resumed tasks & Part of the required stack; ready for deferrable sensors\\
-PostgreSQL 15 & Airflow metadata (runs, task states, XComs) & PostgreSQL & --- & Used by all Airflow services; flood data is not stored here yet\\
-Bronze DAG & Extract, validate and persist raw data & TaskFlow API, \texttt{requests}, BeautifulSoup4 & sources $\rightarrow$ \texttt{datalake\_bronze/} & Atomic write; advances the Storm Events watermark only after the write\\
-Bronze layer & Raw copy of every run & JSON & --- & Watched by the FileSensor\\
-Silver DAG & Clean and type the data & FileSensor, Pandas, PyArrow & Bronze JSON $\rightarrow$ Parquet & Lineage in file names, columns, Parquet metadata and \texttt{\_manifest.jsonl}\\
-Silver layer & Analysis-ready tables per topic & Apache Parquet (Snappy) & --- & Input of the Gold layer\\
-Gold layer (planned) & Aggregates, Flood Risk Index & PySpark (Workshop 3) & Silver $\rightarrow$ Gold tables & Reads every file of a topic with one glob\\
-Dashboard (planned) & Monitoring UI & Plotly Dash (Workshop 4) & Gold $\rightarrow$ web app & ---\\
+\subsection{2.1 Component Breakdown and Technology Justification}
+Every tool in the stack was chosen to balance local reproducibility on student hardware with sound data-engineering practice \citep{apache2026}:
+
+\begin{table}[H]
+\centering
+\scriptsize
+\caption{Component Breakdown and Technology Justification across Architectural Layers.}
+\label{tab:component_breakdown}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{2.5cm} >{\raggedright\arraybackslash}p{3.0cm} >{\raggedright\arraybackslash}p{4.0cm} >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Layer / Component} & \textbf{Technology Stack} & \textbf{Inputs \& Outputs} & \textbf{Engineering Justification} \\
+\midrule
+Containerization & Docker Compose; custom image from \texttt{apache/\allowbreak airflow:\allowbreak 2.10.2-\allowbreak python3.11} & \textbf{In:} \texttt{docker-compose.yml}, \texttt{.env}. \newline \textbf{Out:} five running services. & One command reproduces the same stack on every laptop; bind-mounted volumes keep all outputs on the host. \\
+\addlinespace
+Orchestration \& Scheduling & Apache Airflow 2.10.2 (TaskFlow API, LocalExecutor, PostgreSQL 15 metadata DB) & \textbf{In:} Cron schedules, FileSensor events. \newline \textbf{Out:} Task state logs, triggered DAG runs. & Native DAG dependencies, automatic retries with back-off and declarative \texttt{@dag}/\texttt{@task} Python syntax, without the Celery/Redis overhead. \\
+\addlinespace
+Bronze Ingestion Layer & Python 3.11, requests, BeautifulSoup4, JSON & \textbf{In:} NWS GeoJSON, NCEI HTML index and CSV.gz files, NCEI ADS JSON. \newline \textbf{Out:} Raw JSON in \texttt{datalake\_bronze/}. & Keeps the source payloads exactly as received, as an audit trail, so no data is lost if downstream rules change. Scraping is needed because Storm Events has no API: only its HTML directory says which yearly files exist and when NOAA re-compiled them. \\
+\addlinespace
+Silver Processing Layer & Pandas 2.1 \citep{mckinney2010} and PyArrow (versions pinned by the Airflow constraints), Apache Parquet (Snappy) & \textbf{In:} Bronze JSON files not yet in the manifest. \newline \textbf{Out:} Typed Parquet tables in \texttt{datalake\_silver/}. & \textbf{Pandas rather than Polars:} the largest batch (8,000 Storm Events rows, about 31,000 GHCN-Daily rows) fits easily in memory, so Polars' speed advantage does not matter here; Pandas also offers time-aware interpolation and is the library used in the course. \textbf{Parquet:} 25.0~MB of Bronze JSON became 5.7~MB of Parquet; it keeps strict types (UTC timestamps, \texttt{float64}, \texttt{int8}, lists) and lets PySpark read many files with predicate pushdown in Workshop 3 \citep{parquet2026}. \\
+\addlinespace
+Gold Layer (Planned W3) & PySpark & \textbf{In:} Silver Parquet files. \newline \textbf{Out:} County-level Flood Risk Index in \texttt{datalake\_gold/}. & Distributed window aggregations across many timestamped Silver files, to compute $24\text{h}/7\text{d}$ rainfall percentiles. \\
+\addlinespace
+Analytics UI (Planned W4) & Plotly Dash (\texttt{localhost:8050}) & \textbf{In:} Gold tables \& Airflow freshness logs. \newline \textbf{Out:} Interactive Texas county alert map. & Decision-ready visual summaries for non-programmer emergency analysts. \\
 \bottomrule
-\end{longtable}
+\end{tabularx}
+\end{table}
 
-\subsection{Technology choices}
+\subsection{2.2 File Nomenclature Conventions}
+Timestamp-based file names give chronological sorting, collision-free runs and end-to-end lineage between Bronze and Silver files:
+
 \begin{itemize}
-  \item \textbf{Apache Airflow with the TaskFlow API} \citep{airflow_docs}: \texttt{@dag} and \texttt{@task} turn each step into a plain Python function, and the dependencies follow from the function calls. Payloads pass between tasks as XComs, which are stored in PostgreSQL. This is acceptable at our volume, where the largest XCom is the daily Storm Events delta of a few MB.
-  \item \textbf{Web scraping with BeautifulSoup4}: the Storm Events data has no API. Its HTML directory is the only place that says which yearly files exist and when NOAA last re-compiled them (suffix \texttt{\_cYYYYMMDD}). Scraping it every run gives us the watermark that decides which files must be downloaded again.
-  \item \textbf{Pandas for Silver} \citep{mckinney2010}: each batch fits easily in memory. The largest is the full Storm Events history, with 8{,}000 rows. Pandas also offers time-aware interpolation and is pinned by the Airflow constraints. Polars is installed in the image, but at this volume its speed would not change the result.
-  \item \textbf{Parquet for Silver} \citep{parquet}: columnar, typed (UTC timestamps, lists for tokens and UGC codes) and compressed, with key-value metadata that we use for lineage. In Workshop~3, PySpark loads every Silver file of a topic with one glob.
-  \item \textbf{Docker Compose} \citep{docker_compose}: one command reproduces the stack on every laptop. The \texttt{Dockerfile} installs \texttt{requirements-airflow.txt} with the Airflow~2.10.2 constraints, so our extra packages cannot change the versions Airflow depends on.
+    \item \textbf{Bronze Layer Nomenclature:} \\
+    \texttt{datalake\_bronze/texas\_flood\_sources\_YYYYMMDD\_HHMMSS.json} (e.g., \texttt{texas\_flood\_sources\_20261117\_000000.json}). The timestamp is the UTC \emph{end of the run's data interval}, not the wall-clock time. Re-running the same interval therefore overwrites the same file instead of creating a duplicate.
+    \item \textbf{Silver Layer Nomenclature:} \\
+    \texttt{datalake\_silver/<topic>\_<PROC\_TS>\_from\_<BRONZE\_STEM>.parquet}, with \texttt{topic} $\in$ \{\texttt{nws\_observations}, \texttt{nws\_alerts}, \texttt{daily\_precipitation}, \texttt{flood\_events}\} (e.g., \texttt{flood\_events\_20261116\_234551\_from\_texas\_flood\_sources\_20261116\_233000.parquet}). \texttt{PROC\_TS} is the UTC time of the processing run, which Workshop 3 needs, and the Bronze stem gives immediate visual traceability.
+    \item \textbf{Bookkeeping files:} \texttt{datalake\_bronze/\_state/} stores the Storm Events compile watermarks. \texttt{datalake\_silver/\_manifest.jsonl} lists every Bronze file processed and what it produced, and \texttt{datalake\_silver/\_registry/} stores the keys and hashes already written to Silver.
 \end{itemize}
 
-\subsection{File nomenclature}
-\begin{itemize}
-  \item \textbf{Bronze:} \texttt{datalake\_bronze/texas\_flood\_sources\_YYYYMMDD\_HHMMSS.json}. The source prefix is \texttt{texas\_flood\_sources}, because one document holds every source of a run. The timestamp is the UTC \emph{end of the run's data interval}, so re-running an interval overwrites the same file instead of adding a new one.
-  \item \textbf{Silver:} \texttt{datalake\_silver/<topic>\_YYYYMMDD\_HHMMSS\_from\_<bronze stem>.parquet}, with \texttt{topic} $\in$ \{\texttt{nws\_observations}, \texttt{nws\_alerts}, \texttt{daily\_precipitation}, \texttt{flood\_events}\}. The timestamp is the UTC time of the processing run, as Workshop~3 requires, and the suffix names the Bronze file it came from.
-  \item \textbf{Bookkeeping:} \texttt{datalake\_bronze/\_state/} stores the Storm Events watermarks. In Silver, \texttt{\_manifest.jsonl} records each Bronze file processed and what it produced, and \texttt{\_registry/} stores the keys and hashes already written.
-\end{itemize}
+\section{\large 3. Preprocessing Pipeline Design}
+Every cleaning rule in \texttt{src/flood\_monitor/preprocessing.py} and \texttt{text.py} answers a data-quality (DQ) problem found in Workshop No.~1, when we profiled 2,500 NWS observations, 226 NWS alerts, 724 Storm Events records and 1,825 GHCN-Daily station-days \citep{nws2026}:
 
-% ===========================================================================
-\section{Preprocessing Pipeline (Bronze $\rightarrow$ Silver)}
-Every decision below answers a problem observed in the Workshop~1 samples. DQ~\#$n$ refers to Table~3 of the Workshop~1 report. The code is in \texttt{src/flood\_monitor/preprocessing.py} and \texttt{text.py}.
-
-\subsection{Data-type normalization}
-\begin{itemize}
-  \item \textbf{Timestamps $\rightarrow$ \texttt{timestamp[UTC]}.}
-  \begin{itemize}
-    \item Storm Events times are local, with a two-digit year and the zone in a separate column (DQ~\#1). They are parsed with an explicit format and shifted by the offset in \texttt{CZ\_TIMEZONE}.
-    \item NWS alert times carry \texttt{-05:00} or \texttt{-06:00} offsets (DQ~\#9) and are converted to UTC.
-    \item GHCN values are local-day totals (DQ~\#5), so they are stored as dates, not instants.
-  \end{itemize}
-  \item \textbf{Measurements $\rightarrow$ \texttt{float64}; casualty counts $\rightarrow$ \texttt{int32}; severity $\rightarrow$ \texttt{int8}.} Damage strings with K/M/B suffixes (DQ~\#2) are parsed to USD.
-  \item \textbf{Categories:} event type, message type, NWS severity, certainty, urgency, QC flags and GHCN flags become trimmed strings, with the sentinels \texttt{unknown}, \texttt{none} or \texttt{MISSING} instead of NULL. Parquet stores them with dictionary encoding.
-  \item \textbf{Lists:} tokens, impact terms, UGC codes and alert references are stored as \texttt{list<string>}.
-\end{itemize}
-
-\subsection{Null handling}
-\begin{longtable}{@{}p{3.4cm}p{3.2cm}p{7.9cm}@{}}
-\caption{Null strategy per field (drop, impute, sentinel or flag).}\\
-\toprule Field & Strategy & Justification\\\midrule\endhead
-Keys and main timestamp & \textbf{Drop} row & A record without identity or time cannot be de-duplicated or placed on the timeline.\\
-GHCN \texttt{PRCP} & \textbf{Drop} row & There is no value to analyse, and imputing rainfall would invent wet or dry days.\\
-NWS \texttt{precipitationLastHour} & \textbf{NULL + flag} \texttt{precip\_missing} & In the Workshop~1 sample 98\% of observations had no value (\PrecipMissingPct\% in this workshop's runs), because only METAR reports carry rainfall (DQ~\#6). A missing hourly total is \emph{not} 0~mm, so severity also stays NULL. The first version filled these values with 0, and we reverted it.\\
-NWS temperature & \textbf{Impute} by time interpolation (max.\ 2 steps) + flag & 5-minute series are smooth, so short gaps can be filled safely. Longer gaps stay NULL.\\
-Alert \texttt{onset}, \texttt{ends} & \textbf{Impute} with \texttt{effective}, \texttt{expires} + flag & CAP semantics: an alert without onset starts when it becomes effective and lasts until it expires.\\
-Storm Events damage & \textbf{NULL + flag} \texttt{damage\_missing} & An empty field means the damage is unknown, not zero (DQ~\#2).\\
-Storm Events casualties & \textbf{Impute 0} (mode) & 0 is the overwhelming mode, and NOAA reports 0 when there were no casualties.\\
-Coordinates & \textbf{NULL} (never 0,0) + \texttt{location\_known} & Records stay usable through the county or zone code.\\
-Text and categories & \textbf{Sentinel} & \texttt{unknown}, \texttt{none} and \texttt{MISSING} keep group-bys and string operations simple.\\
+\begin{table}[H]
+\centering
+\scriptsize
+\caption{Preprocessing Pipeline Rules Mapped to Workshop No. 1 Empirical Findings.}
+\label{tab:preprocessing_rules}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{2.2cm} >{\raggedright\arraybackslash}p{3.6cm} >{\raggedright\arraybackslash}p{4.6cm} >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Pipeline Step} & \textbf{Workshop 1 Empirical Finding} & \textbf{Implemented Transformation Rule} & \textbf{Target Fields \& Impact} \\
+\midrule
+1. Event Domain Filtering & DQ Issue \#11: 191 of 226 NWS alerts were non-hydrological hazards (e.g., Dense Fog, Special Weather Statements). & Filter alert features against the curated \texttt{FLOOD\_ALERT\_EVENTS} allowlist (Flood/Flash Flood Warnings, Watches, Advisories, Statements, Hydrologic Outlook). & \texttt{nws\_event}; removes non-flood noise before spatial or severity processing. Coastal flood products are excluded, as defined in the Workshop 1 scope. \\
+\addlinespace
+2. Temporal Normalization & DQ Issues \#1, \#5 and \#9: Storm Events times are local with a separate zone label (\texttt{CST-6}); GHCN values are local-day totals; alert times use \texttt{-05:00}/\texttt{-06:00} offsets. & Storm Events: explicit parse (\texttt{\%d-\%b-\%y \%H:\%M:\%S}) and shift by the \texttt{CZ\_TIMEZONE} offset. Alerts and observations: \texttt{pd.to\_datetime(..., utc=True)}. GHCN: stored as a date, not an instant. & \texttt{ts\_utc}, \texttt{begin\_utc}, \texttt{sent\_utc}, \texttt{onset\_utc}, \texttt{ends\_utc} as UTC timestamps; \texttt{obs\_date} as date. \\
+\addlinespace
+3. Null Handling \& Sensor Flagging & DQ Issues \#6 and \#7: 2,463 of 2,500 observations had \texttt{precipitationLastHour=null}, because 5-min ASOS reports omit rainfall and only hourly METAR reports populate it. & Keep \texttt{precip\_1h\_mm} as \texttt{NULL} and add \texttt{precip\_missing} and \texttt{is\_metar\_precip\_report}; severity also stays \texttt{NULL}. The strategy for every field is in Table~\ref{tab:nulls}. & A missing hourly total is \emph{not} 0~mm; zero-filling would hide the reporting cadence and bias accumulations. \\
+\addlinespace
+4. Spatial Validation \& Centroids & DQ Issue \#8: 89 of 226 alerts had no polygon geometry (\texttt{geometry=null}), only UGC zone codes. Station and event coordinates must fall inside Texas. & Mean polygon centroid when a polygon exists; otherwise \texttt{NULL} (never \texttt{0,0}) with \texttt{has\_geometry=False}. Texas WGS84 bounding box ($25.8\text{--}36.5^\circ\text{N}$, $106.65\text{--}93.5^\circ\text{W}$). & \texttt{latitude}, \texttt{longitude}, \texttt{centroid\_lat}, \texttt{centroid\_lon}, \texttt{has\_geometry}, \texttt{location\_known}. \\
 \bottomrule
-\end{longtable}
+\end{tabularx}
+\end{table}
 
-\subsection{Outlier detection and handling}
-For floods, extreme rainfall \emph{is} the signal. Statistical outliers are therefore \textbf{flagged and kept}, and only physically impossible values are removed.
-\begin{itemize}
-  \item \textbf{Physical range (set to NULL + \texttt{out\_of\_range}):}
-  \begin{itemize}
-    \item hourly precipitation outside 0--250~mm (3~h: 0--500; 6~h: 0--750);
-    \item daily PRCP outside 0--1000~mm;
-    \item temperature outside $-40$ to 55~\textdegree C, and humidity outside 0--100\%;
-    \item coordinates outside the Texas bounding box.
-  \end{itemize}
-  \item \textbf{IQR} \citep{tukey1977}: values above $Q_3 + 3\,\mathrm{IQR}$ are flagged on wet days per GHCN station (\texttt{is\_outlier\_iqr}) and on wet METAR hours (\texttt{is\_outlier\_precip}). $k=3$ is used because rainfall is strongly right-skewed. Damage is flagged above $Q_3 + 1.5\,\mathrm{IQR}$ on $\log_{10}$ USD. Quartiles are computed only with at least 10 values.
-  \item \textbf{$Z$-score:} \texttt{prcp\_zscore} is computed on $\log(1+\text{PRCP})$ per station, and \texttt{is\_outlier\_z} marks $|z|>3$. The temperature $Z$-score is kept per station.
-\end{itemize}
-\gen{wettest.tex}
+\begin{table}[H]
+\centering
+\scriptsize
+\caption{Preprocessing Pipeline Rules Mapped to Workshop No. 1 Empirical Findings (continued).}
+\label{tab:preprocessing_rules_2}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{2.2cm} >{\raggedright\arraybackslash}p{3.6cm} >{\raggedright\arraybackslash}p{4.6cm} >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Pipeline Step} & \textbf{Workshop 1 Empirical Finding} & \textbf{Implemented Transformation Rule} & \textbf{Target Fields \& Impact} \\
+\midrule
+5. Outlier Detection & Sensor errors can produce negative or impossible values, while real floods produce genuine extremes (155.2~mm in Bexar County, 12 June 2025; 408.2~mm at Houston IAH during Hurricane Harvey). & \textbf{Physical range} $\rightarrow$ \texttt{NULL} + \texttt{out\_of\_range}: rain 1~h 0--250~mm, daily 0--1000~mm, temperature $-40$ to 55~$^\circ$C, humidity 0--100\%. \textbf{IQR} \citep{tukey1977}: wet values above $Q_3 + 3\,\mathrm{IQR}$ flagged (k=3 because rainfall is right-skewed); damage above $Q_3 + 1.5\,\mathrm{IQR}$ on $\log_{10}$ USD. \textbf{$Z$-score} on $\log(1+\text{PRCP})$ per station, $|z|>3$ flagged; temperature $Z$-score kept. & \texttt{is\_outlier\_precip}, \texttt{is\_outlier\_iqr}, \texttt{is\_outlier\_z}, \texttt{prcp\_zscore}, \texttt{is\_outlier\_damage}, \texttt{temperature\_zscore}. Extremes are \emph{flagged and kept}, because they are the flood signal. \\
+\addlinespace
+6. Text Preprocessing (NLP) & Storm Events narratives and alert headlines/descriptions are free text with NWS abbreviations, ``\ldots'' separators and mixed units; short fields (\texttt{textDescription}, \texttt{areaDesc}) have inconsistent casing and punctuation. & Narratives (\texttt{text.py}): lowercasing, URL removal, abbreviation expansion (\emph{hwy}, \emph{fm}, \emph{mph}), unit normalization (``2.5in'' $\rightarrow$ ``2.5 inches''), punctuation removal, whitespace tokenization, English stop-word removal, impact-term extraction. Short fields: \texttt{normalize\_text()} with an \texttt{"unknown"} sentinel. & \texttt{narrative\_clean}, \texttt{narrative\_tokens}, \texttt{description\_tokens}, \texttt{impact\_terms}, \texttt{text\_description}, \texttt{area\_desc}. Most frequent impact terms: creek (1,411), river (1,088), water rescue (994), vehicle (904). \\
+\addlinespace
+7. Damage and Severity & DQ Issues \#2 and \#3: damage stored as text (\texttt{"15.00K"}) mixed with empty values; floods have no physical magnitude field. & Parse K/M/B suffixes into USD; an empty value stays \texttt{NULL} with \texttt{damage\_missing}. Canonical \texttt{severity\_level} 0--3 for every topic (rainfall thresholds, alert class, damage/casualties). & \texttt{damage\_property\_usd}, \texttt{damage\_missing}, \texttt{severity\_level} (\texttt{int8}). \\
+\addlinespace
+8. Deduplication & DQ Issue \#10 and overlapping polling windows: the same observation, alert or station-day reappears in later Bronze files. & Inside a batch: one row per natural key (\texttt{(station\_id, ts\_utc)}, \texttt{alert\_id}, \texttt{(ghcn\_station\_id, obs\_date)}, \texttt{storm\_event\_id}). Across batches: a SHA-256 \texttt{record\_hash} of the raw record is compared with \texttt{\_registry/}; identical rows are skipped, and changed rows are written with \texttt{is\_update=True}. & Unique \texttt{event\_id} across all Silver files of a topic (verified in \texttt{notebooks/02\_silver\_exploration.ipynb}). \\
+\bottomrule
+\end{tabularx}
+\end{table}
 
-\subsection{Text preprocessing (NLP)}
-Our topic contains free text in the Storm Events narratives and in the NWS alert headlines and descriptions. The pipeline in \texttt{text.py} is:
-\begin{enumerate}
-  \item lowercasing;
-  \item URL removal;
-  \item expansion of NWS abbreviations (\emph{hwy}, \emph{fm}, \emph{mph}, \emph{nws});
-  \item unit normalization (``2.5in'' $\rightarrow$ ``2.5 inches'');
-  \item removal of punctuation and of the ``\ldots'' separators of NWS products;
-  \item whitespace tokenization;
-  \item English stop-word removal, with an embedded list so the containers need no corpus download.
-\end{enumerate}
-Impact terms such as \emph{water rescue}, \emph{low water crossing} and \emph{stranded} are extracted as a list. The most frequent ones are: \TopTerms. Short categorical text (alert area, station description) keeps the lighter \texttt{normalize\_text}.
+\subsection{3.1 Null-Handling Strategy per Field}
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{Null-handling strategy per field (drop, impute, sentinel or flag).}
+\label{tab:nulls}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{3.8cm} >{\raggedright\arraybackslash}p{3.4cm} >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Field} & \textbf{Strategy} & \textbf{Justification} \\
+\midrule
+Keys and main timestamps & Drop row & A record without identity or time cannot be de-duplicated or placed on the timeline. \\
+GHCN-Daily \texttt{PRCP} & Drop row & There is no value to analyse, and imputing rainfall would invent wet or dry days. \\
+NWS \texttt{precipitationLastHour} & \texttt{NULL} + flag (\texttt{precip\_missing}) & Expected gap in 5-minute reports (DQ \#6); it is not zero. \\
+NWS temperature & Impute (time interpolation, max.\ 2 steps) + flag & 5-minute series are smooth, so short gaps can be filled safely. Longer gaps stay \texttt{NULL}. \\
+Alert \texttt{onset}, \texttt{ends} & Impute with \texttt{effective}, \texttt{expires} + flag & CAP semantics: an alert without onset starts when it becomes effective and lasts until it expires. \\
+Storm Events damage & \texttt{NULL} + flag (\texttt{damage\_missing}) & Unknown, not zero (DQ \#2). \\
+Storm Events casualties & Impute 0 (mode) & 0 is the overwhelming mode, and NOAA reports 0 when there were no casualties. \\
+Coordinates & \texttt{NULL} (never 0,0) & Records stay usable through the county or zone code. \\
+Categories and short text & Sentinel (\texttt{unknown}, \texttt{none}, \texttt{MISSING}) & Keeps group-bys and string operations simple. \\
+\bottomrule
+\end{tabularx}
+\end{table}
 
-\subsection{De-duplication}
-\begin{itemize}
-  \item \textbf{Within a batch:} one row per natural key. The keys are \texttt{storm\_event\_id}, (\texttt{ghcn\_station\_id}, \texttt{obs\_date}), (\texttt{station\_id}, \texttt{ts\_utc}) and \texttt{alert\_id}.
-  \item \textbf{Across batches:} each row has \texttt{event\_id} and a SHA-256 \texttt{record\_hash} of the raw record. \texttt{\_registry/<topic>\_keys.parquet} keeps the pairs already written. A known pair is skipped, and a known key with a new hash is written with \texttt{is\_update = true}. This is necessary because the incremental pulls overlap on purpose: 3~h for observations, 30 days for GHCN-Daily, and the recent alert window.
-\end{itemize}
+\subsection{3.2 Target Silver Parquet Schemas}
+Table~\ref{tab:silver_schemas} lists the schemas enforced by \texttt{enforce\_schema()} before PyArrow writes each file. Columns follow a fixed order with explicit Arrow types, required fields are declared non-nullable, and rows that miss a required field are dropped. Six columns are common to all topics: \texttt{event\_id}, \texttt{source\_system}, \texttt{record\_hash}, \texttt{is\_update}, \texttt{bronze\_source\_file} and \texttt{processed\_at\_utc}.
 
-\subsection{Schema enforcement}
-\texttt{preprocessing.SCHEMAS} defines the target schema of each topic: field name, Arrow type and whether the field is required. Before writing, rows missing a required field are dropped, columns are put in a fixed order, and the table is built with explicit types. Required fields are declared non-nullable. Six columns are common to all topics: \texttt{event\_id}, \texttt{source\_system}, \texttt{record\_hash}, \texttt{is\_update}, \texttt{bronze\_source\_file} and \texttt{processed\_at\_utc}.
+\begin{table}[H]
+\centering
+\scriptsize
+\caption{Target Silver Parquet Schemas and Enforced Arrow Types (required fields in bold).}
+\label{tab:silver_schemas}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{3.0cm} >{\raggedright\arraybackslash}p{2.6cm} >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Silver Topic} & \textbf{Natural Key} & \textbf{Topic-specific Columns and Types} \\
+\midrule
+\texttt{nws\_observations} & \texttt{(station\_id, ts\_utc)} & \textbf{\texttt{station\_id}} (string), \texttt{ghcn\_station\_id}, \texttt{county} (string), \textbf{\texttt{ts\_utc}} (timestamp UTC), \texttt{latitude}, \texttt{longitude}, \texttt{precip\_1h/3h/6h\_mm}, \texttt{temperature\_c}, \texttt{relative\_humidity\_pct}, \texttt{temperature\_zscore} (float64), \textbf{\texttt{is\_metar}}, \textbf{\texttt{is\_metar\_precip\_report}}, \textbf{\texttt{precip\_missing}}, \textbf{\texttt{temperature\_imputed}}, \textbf{\texttt{out\_of\_range}}, \textbf{\texttt{is\_outlier\_precip}} (bool), \textbf{\texttt{qc\_flag}}, \textbf{\texttt{text\_description}} (string), \texttt{severity\_level} (int8, nullable). \\
+\addlinespace
+\texttt{nws\_alerts} & \texttt{alert\_id} & \textbf{\texttt{alert\_id}}, \textbf{\texttt{nws\_event}}, \textbf{\texttt{message\_type}}, \textbf{\texttt{status}}, \textbf{\texttt{nws\_severity}}, \textbf{\texttt{certainty}}, \textbf{\texttt{urgency}}, \textbf{\texttt{area\_desc}}, \texttt{headline\_clean} (string), \textbf{\texttt{sent\_utc}}, \texttt{effective\_utc}, \texttt{onset\_utc}, \texttt{expires\_utc}, \texttt{ends\_utc} (timestamp UTC), \textbf{\texttt{onset\_imputed}}, \textbf{\texttt{ends\_imputed}}, \textbf{\texttt{has\_geometry}} (bool), \texttt{centroid\_lat}, \texttt{centroid\_lon} (float64), \texttt{ugc\_codes}, \texttt{reference\_ids}, \texttt{description\_tokens}, \texttt{impact\_terms} (list<string>), \textbf{\texttt{severity\_level}} (int8). \\
+\addlinespace
+\texttt{daily\_precipitation} & \texttt{(ghcn\_station\_id, obs\_date)} & \texttt{station\_id}, \textbf{\texttt{ghcn\_station\_id}}, \textbf{\texttt{mflag}}, \textbf{\texttt{qflag}} (string), \textbf{\texttt{obs\_date}} (date), \textbf{\texttt{prcp\_mm}}, \texttt{prcp\_zscore}, \texttt{latitude}, \texttt{longitude} (float64), \textbf{\texttt{is\_trace}}, \textbf{\texttt{qc\_failed}}, \textbf{\texttt{is\_outlier\_iqr}}, \textbf{\texttt{is\_outlier\_z}} (bool), \textbf{\texttt{severity\_level}} (int8). \\
+\addlinespace
+\texttt{flood\_events} & \texttt{storm\_event\_id} & \textbf{\texttt{storm\_event\_id}}, \texttt{episode\_id}, \textbf{\texttt{event\_type}}, \textbf{\texttt{cz\_type}}, \textbf{\texttt{cz\_fips}}, \textbf{\texttt{county}}, \textbf{\texttt{flood\_cause}}, \texttt{narrative\_clean}, \texttt{storm\_events\_file} (string), \textbf{\texttt{begin\_utc}}, \texttt{end\_utc} (timestamp UTC), \texttt{latitude}, \texttt{longitude}, \texttt{damage\_property\_usd}, \texttt{damage\_crops\_usd} (float64), \textbf{\texttt{location\_known}}, \textbf{\texttt{damage\_missing}}, \textbf{\texttt{is\_outlier\_damage}} (bool), \textbf{\texttt{deaths\_/injuries\_direct/indirect}} (int32), \texttt{narrative\_tokens}, \texttt{impact\_terms} (list<string>), \textbf{\texttt{severity\_level}} (int8). \\
+\bottomrule
+\end{tabularx}
+\end{table}
 
-% ===========================================================================
-\section{Docker Stack}
-\begin{table}[H]\centering\small
-\caption{Services in \texttt{docker-compose.yml}.}
-\begin{tabular}{@{}p{3cm}p{4.2cm}p{7cm}@{}}\toprule
-Service & Image / command & Role\\\midrule
-\texttt{postgres} & \texttt{postgres:15} & Airflow metadata DB; named volume; health check \texttt{pg\_isready}.\\
-\texttt{airflow-init} & project image; creates folders, \texttt{db migrate}, admin user & One-shot initialization.\\
-\texttt{airflow-webserver} & project image, \texttt{webserver} & UI at \url{http://localhost:8080}; health check on \texttt{/health}.\\
-\texttt{airflow-scheduler} & project image, \texttt{scheduler} & Schedules and runs tasks (LocalExecutor).\\
-\texttt{airflow-triggerer} & project image, \texttt{triggerer} & Runs deferrable operators.\\
-\bottomrule\end{tabular}\end{table}
+\section{\large 4. Docker Compose Stack Setup}
+The infrastructure has two parts. A custom \texttt{Dockerfile} extends \texttt{apache/airflow:2.10.2-python3.11} and installs \texttt{requirements-airflow.txt} (\texttt{requests}, \texttt{beautifulsoup4}, \texttt{pandas}, \texttt{pyarrow}, \texttt{polars}, \texttt{pyyaml}, \texttt{python-dotenv}) with the official Airflow 2.10.2 constraints file, so these packages cannot change the versions Airflow depends on. A multi-container \texttt{docker-compose.yml} runs the services on the default Compose bridge network, where they reach each other by service name.
 
-\paragraph{Image.} \texttt{FROM apache/airflow:2.10.2-python3.11}, then \texttt{pip install -r requirements-airflow.txt} (requests, beautifulsoup4, pandas, pyarrow, polars, pyyaml, python-dotenv) with the Airflow~2.10.2 constraints file.
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{Docker Compose Container Topology, Images, and Persistent Volume Roles.}
+\label{tab:docker_stack}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{2.9cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Service Container} & \textbf{Image / Build} & \textbf{Role, Networking \& Persistent Volume Mounts} \\
+\midrule
+\texttt{postgres} & \texttt{postgres:15} & Stores Airflow metadata (DAG runs, task instances, XComs, connections). Persisted in the named volume \texttt{postgres-db-volume}, with \texttt{pg\_isready} health checks. \\
+\addlinespace
+\texttt{airflow-init} & Custom Airflow build & One-shot container: creates the data-lake directories, runs \texttt{airflow db migrate} and creates the admin user (password from \texttt{.env}). \\
+\addlinespace
+\texttt{airflow-webserver} & Custom Airflow build & Serves the Airflow Web UI and REST API on host port 8080 (\url{http://localhost:8080}), with a health check on \texttt{/health}. \\
+\addlinespace
+\texttt{airflow-scheduler} & Custom Airflow build & Parses the DAGs, triggers scheduled runs and executes the TaskFlow tasks (\texttt{LocalExecutor}). \\
+\addlinespace
+\texttt{airflow-triggerer} & Custom Airflow build & Runs deferrable operators and asynchronous sensor events. \\
+\bottomrule
+\end{tabularx}
+\end{table}
 
-\paragraph{Volumes.} \texttt{airflow/dags}, \texttt{airflow/logs}, \texttt{src}, \texttt{config}, \texttt{data}, \texttt{datalake\_bronze}, \texttt{datalake\_silver} and \texttt{datalake\_gold} are bind-mounted under \texttt{/opt/airflow}. All outputs stay on the host, and DAG edits are reloaded automatically.
+\noindent \textbf{Host-to-Container Volume Mounts:} Eight local directories are bind-mounted into \texttt{/opt/airflow/} in every Airflow container: \texttt{./airflow/dags}, \texttt{./airflow/logs}, \texttt{./src} (added to \texttt{PYTHONPATH}), \texttt{./config}, \texttt{./data} (Storm Events download cache), \texttt{./datalake\_bronze}, \texttt{./datalake\_silver} and \texttt{./datalake\_gold}. DAG changes reload without rebuilding the image, and all outputs survive container restarts.
 
-\paragraph{Configuration and networking.} The services share the default Compose network and reach the database by its service name. The NWS contact, the webserver secret key and the admin password come from \texttt{.env} (\texttt{env\_file}). That file is git-ignored, and \texttt{.env.example} documents it. \texttt{AIRFLOW\_CONN\_FS\_DEFAULT} defines the filesystem connection of the FileSensor, and \texttt{PYTHONPATH=/opt/airflow/src} makes the \texttt{flood\_monitor} package importable from the DAGs.
+\noindent \textbf{Configuration:} the NWS contact (\texttt{NWS\_USER\_AGENT}), the webserver secret key and the admin password are read from \texttt{.env} through \texttt{env\_file}. That file is git-ignored, and \texttt{.env.example} documents every variable. \texttt{AIRFLOW\_CONN\_FS\_DEFAULT} defines the filesystem connection used by the FileSensor.
 
-\paragraph{Setup.}
-\begin{lstlisting}
-git clone https://github.com/natcastill/flood-monitoring-team2.git
-cd flood-monitoring-team2
-cp .env.example .env            # Windows: copy .env.example .env ; edit NWS_USER_AGENT
-docker compose up -d --build    # http://localhost:8080  (admin / AIRFLOW_ADMIN_PASSWORD)
-docker compose down             # data stays in the datalake_* folders
+\begin{lstlisting}[language=bash]
+# Deployment & Verification Commands
+cp .env.example .env              # Windows: copy .env.example .env  -> edit NWS_USER_AGENT
+docker compose up -d --build      # builds the image and starts the five services
+# Airflow UI at http://localhost:8080 (user admin / AIRFLOW_ADMIN_PASSWORD)
+docker compose down               # stops the stack; data stays in the datalake_* folders
 \end{lstlisting}
 
-% ===========================================================================
-\section{DAG Documentation}
+\section{\large 5. Airflow DAG Documentation}
 
-\subsection{\texttt{bronze\_flood\_ingestion\_dag}}
+\subsection{5.1 Bronze Ingestion DAG (\texttt{bronze\_flood\_ingestion\_dag})}
 \begin{itemize}
-  \item \textbf{Schedule:} \texttt{*/15 * * * *}, the fastest cadence in the Workshop~1 contract (alerts every 15~min), with \texttt{catchup=False}, \texttt{max\_active\_runs=1} and 2 retries 2 minutes apart. Each source keeps its own contract cadence inside the DAG: observations hourly, GHCN-Daily and Storm Events details daily at 11:00~UTC. Parameters: \texttt{force\_all} pulls every source on demand, and \texttt{ghcnd\_backfill\_from} loads the GHCN-Daily history station $\times$ year.
-  \item \textbf{Tasks:} \texttt{run\_context} $\rightarrow$ \texttt{extract\_nws\_alerts}, \texttt{extract\_nws\_observations}, \texttt{scrape\_storm\_events\_catalog} $\rightarrow$ \texttt{extract\_storm\_events\_details}, \texttt{extract\_ghcnd} $\rightarrow$ \texttt{validate\_bronze} $\rightarrow$ \texttt{persist\_bronze}.
-  \begin{itemize}
-    \item \emph{Validation} checks the structure of every payload, counts records missing required fields, and fails the run if the scraping found no files or no source returned records.
-    \item \emph{Persistence} writes atomically (temporary file + rename) and only then advances the Storm Events watermark.
-  \end{itemize}
-  \item \textbf{Error handling and logging:} every task logs its counts. HTTP calls retry up to three times with exponential back-off on 429/5xx and on network errors. A failing station or GHCN request is logged and skipped, so the other sources still arrive.
+    \item \textbf{File \& Paradigm:} \texttt{airflow/dags/bronze\_ingestion\_dag.py}, written with Airflow's TaskFlow API (\texttt{@dag} and \texttt{@task}).
+    \item \textbf{Schedule \& Retries:} every 15 minutes (\texttt{*/15 * * * *}), the alert cadence of the Workshop 1 contract, with \texttt{catchup=False}, \texttt{max\_active\_runs=1} and 2 retries 2 minutes apart. The other sources keep their own contract cadence inside the DAG: observations on the hourly run (minute 00), and GHCN-Daily and Storm Events details once a day at 11:00 UTC.
+    \item \textbf{Parameters:} \texttt{force\_all} pulls every source on demand. \texttt{ghcnd\_backfill\_from} (e.g., \texttt{"2010-01-01"}) loads the GHCN-Daily history with one request per station and year.
+    \item \textbf{Task Graph:}
+    \begin{itemize}
+        \item \texttt{run\_context} computes the data interval, which defines the file name and the observation window.
+        \item \texttt{extract\_nws\_alerts} queries \texttt{/alerts?area=TX\&limit=250}.
+        \item \texttt{extract\_nws\_observations} queries \texttt{/stations/\{id\}/observations} for \texttt{KIAH}, \texttt{KAUS}, \texttt{KSAT}, \texttt{KDFW} and \texttt{KCRP}, from the last hour minus a 3-hour overlap.
+        \item \texttt{scrape\_storm\_events\_catalog} parses the \texttt{StormEvents\_details-ftp\_v1.0\_dYYYY\_cYYYYMMDD.csv.gz} links of NCEI's HTML index with BeautifulSoup4.
+        \item \texttt{extract\_storm\_events\_details} downloads the yearly files whose compile watermark changed and keeps their Texas flood rows.
+        \item \texttt{extract\_ghcnd} requests the last 30 days of PRCP.
+        \item \texttt{validate\_bronze} checks the structure and required fields of every payload. It fails the run if the scraping found no files or if no source returned records.
+        \item \texttt{persist\_bronze} writes the JSON atomically (temporary file + rename) and only then advances the Storm Events watermark.
+    \end{itemize}
+    \item \textbf{Error handling \& logging:} every task logs its counts. HTTP calls retry up to three times with exponential back-off on HTTP 429/5xx and on network errors. A failing station or GHCN request is logged and skipped, so the other sources still arrive.
 \end{itemize}
 
-\subsection{\texttt{silver\_flood\_processing\_dag}}
+\subsection{5.2 Silver Processing DAG (\texttt{silver\_flood\_processing\_dag})}
 \begin{itemize}
-  \item \textbf{Schedule:} every 10 minutes, \texttt{max\_active\_runs=1}.
-  \item \textbf{\texttt{sense\_new\_bronze\_json}:} a \texttt{FileSensor} on \texttt{datalake\_bronze/texas\_flood\_sources\_*.json}.
-  \begin{itemize}
-    \item \texttt{poke\_interval=60}~s is how often it checks the folder. Bronze arrives every 15~min, so one check per minute is enough.
-    \item \texttt{timeout=9}~min is how long it waits before giving up. It is shorter than the 10-minute schedule, so runs never overlap.
-    \item \texttt{mode="reschedule"} frees the worker slot between checks (the first version used \texttt{poke}, which keeps it busy). \texttt{soft\_fail=True} marks the run \emph{skipped}, not \emph{failed}, when nothing arrives.
-  \end{itemize}
-  \item \textbf{\texttt{discover\_unprocessed\_bronze}:} lists the Bronze files that are not in \texttt{\_manifest.jsonl}. The first version compared file names with the Silver files, which reprocesses forever any Bronze file that produces no new rows.
-  \item \textbf{\texttt{transform\_and\_persist\_silver}:} applies Section~3 to each topic of each Bronze file. It drops rows already in Silver, enforces the schema, and writes Parquet with the metadata keys \texttt{bronze\_source\_file}, \texttt{pipeline\_version} and \texttt{preprocessing\_stats}. It then updates the registry and the manifest.
+    \item \textbf{File \& Paradigm:} \texttt{airflow/dags/silver\_processing\_dag.py}, which combines a classic \texttt{FileSensor} operator with TaskFlow transformation tasks.
+    \item \textbf{Sensor Configuration:} the DAG is scheduled every 10 minutes (\texttt{*/10 * * * *}). The \texttt{sense\_new\_bronze\_json} task watches \texttt{/opt/airflow/datalake\_bronze/texas\_flood\_sources\_*.json} through the connection \texttt{fs\_default}.
+    \begin{itemize}
+        \item \texttt{poke\_interval=60} seconds is how often it checks the folder. Bronze arrives every 15 minutes, so one check per minute is enough.
+        \item \texttt{timeout=540} seconds (9 minutes) is how long it waits before giving up. It is shorter than the 10-minute schedule, so runs never overlap.
+        \item \texttt{mode="reschedule"} releases the worker slot between checks, and \texttt{soft\_fail=True} marks an idle run as \emph{skipped} instead of \emph{failed}.
+    \end{itemize}
+    \item \textbf{Idempotency \& Transformation Chain:}
+    \begin{itemize}
+        \item \texttt{discover\_unprocessed\_bronze} returns the Bronze files that are not listed in \texttt{\_manifest.jsonl}.
+        \item \texttt{transform\_and\_persist\_silver} runs the four topic processors (\texttt{process\_nws\_observations}, \texttt{process\_nws\_alerts}, \texttt{process\_ghcnd}, \texttt{process\_storm\_events}). It drops rows already in Silver, enforces the schema, and writes Snappy-compressed Parquet with the metadata keys \texttt{bronze\_source\_file}, \texttt{pipeline\_version} and \texttt{preprocessing\_stats}. It then updates the registry and the manifest.
+        \item Re-running the DAG with no new Bronze files is a safe no-op. If a Bronze file only contains rows already in Silver, it is recorded in the manifest without writing a Parquet file.
+    \end{itemize}
 \end{itemize}
 
-\subsection{Idempotency}
-\begin{itemize}
-  \item \textbf{Bronze:} the file name depends only on the data interval, and the write is atomic.
-  \item \textbf{Silver:} the manifest and the key/hash registry prevent reprocessing and duplicate rows.
-\end{itemize}
-The manifest of the real runs (below) shows Bronze files whose records were all skipped as \emph{already in Silver}, with no new Parquet written.
+\section{\large 6. Execution Results \& Verification Evidence}
+To validate the pipeline end to end, three Bronze runs were executed against the live sources on 16--17 November 2026, each followed by a Silver run:
+\begin{enumerate}
+    \item the 23:30 UTC interval with \texttt{force\_all} (all sources, including the full Storm Events history 2010--2026);
+    \item the 23:45 UTC interval with the normal cadence (alerts and the scraped catalog only);
+    \item the 00:00 UTC interval (hourly observations), plus the GHCN-Daily history from 2010 (\texttt{ghcnd\_backfill\_from}).
+\end{enumerate}
+The outputs were read back with Pandas and PyArrow in \texttt{notebooks/02\_silver\_exploration.ipynb}, which found no duplicated \texttt{event\_id} in any topic.
+
+\input{generated/bronze_inventory.tex}
+\input{generated/silver_inventory.tex}
+
+\noindent The Silver manifest shows the idempotency at work. The second and third Bronze files contained alerts, observations and station-days that were already in Silver; those rows were skipped and only the new ones were written:
 \lstinputlisting{generated/manifest.txt}
 
-% ===========================================================================
-\section{Results Evidence}
+\shot{airflow_dags_list.png}{Airflow Web UI showing bronze\_flood\_ingestion\_dag and silver\_flood\_processing\_dag with successful runs.}
+\shot{bronze_ingestion_graph.png}{Graph view of a successful bronze\_flood\_ingestion\_dag run.}
+\shot{bronze_ingestion_grid.png}{Grid view with several successful bronze\_flood\_ingestion\_dag runs.}
+\shot{silver_processing_graph.png}{Graph view of a successful silver\_flood\_processing\_dag run, starting with the FileSensor.}
+\shot{filesensor_log.png}{Log of sense\_new\_bronze\_json showing the FileSensor detecting Bronze files.}
 
-\subsection{Pipeline runs}
-The corrected DAGs were run on 16--17 November 2026 against the live sources with Airflow (\texttt{airflow dags test}):
-\begin{enumerate}
-  \item the 23:30~UTC interval with \texttt{force\_all}: all sources, including the full Storm Events history 2010--2026;
-  \item the 23:45~UTC interval with the normal cadence: alerts and the scraped catalog only;
-  \item the 00:00~UTC interval: hourly observations, plus the GHCN-Daily history from 2010 (\texttt{ghcnd\_backfill\_from}).
-\end{enumerate}
-Silver ran after each of them.
-\gen{bronze_inventory.tex}
-\gen{silver_inventory.tex}
-
-\subsection{Airflow UI}
-\shot{airflow_dags_list.png}{Airflow UI (localhost:8080) listing the two DAGs.}{0.95}
-\shot{bronze_ingestion_graph.png}{Graph view of a successful \texttt{bronze\_flood\_ingestion\_dag} run.}{0.95}
-\shot{bronze_ingestion_grid.png}{Grid view with several successful runs of \texttt{bronze\_flood\_ingestion\_dag}.}{0.95}
-\shot{silver_processing_graph.png}{Graph view of a successful \texttt{silver\_flood\_processing\_dag} run, starting with the FileSensor.}{0.95}
-\shot{filesensor_log.png}{Log of \texttt{sense\_new\_bronze\_json} showing the FileSensor detecting Bronze files.}{0.95}
-
-\subsection{Sample Bronze JSON}
+\noindent\textbf{Sample Bronze JSON} (\texttt{datalake\_bronze/texas\_flood\_sources\_20261117\_000000.json}, trimmed):
 \lstinputlisting{generated/bronze_sample.txt}
 
-\subsection{Sample Silver Parquet content}
-\gen{silver_sample.tex}
-The largest damages are the Hurricane Harvey flash floods of August 2017. They show that the conversion of the ``10.00B'' damage strings and the local-time-to-UTC shift work on real records.
+\noindent\textbf{Sample Silver Parquet content.} The five largest damages in \texttt{flood\_events} are the Hurricane Harvey flash floods of August 2017. They show that the K/M/B damage parsing, the local-time-to-UTC conversion and the narrative processing work on real records:
+\input{generated/silver_sample.tex}
+\input{generated/wettest.tex}
 
-% ===========================================================================
-\section{Challenges and Decisions}\label{sec:challenges}
+\section{\large 7. Implementation Challenges and Engineering Decisions}
+The first version of both DAGs ran successfully in Docker (Figures~\ref{fig:v1_airflow} and~\ref{fig:v1_bronze}): 11 Bronze runs every 30 minutes and 30 Silver runs, producing 12 Bronze and 22 Silver files. Reviewing those outputs against the Workshop 2 requirements and the Workshop 1 findings led to the decisions below.
+
+\begin{figure}[H]
+    \centering
+    \caption{First version running in Docker: both DAGs active with successful runs (Bronze every 30 minutes).}
+    \label{fig:v1_airflow}
+    \includegraphics[width=0.95\textwidth]{airflowscreenshot.png}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \caption{First-version Bronze JSON sample: observations, alerts and the Storm Events catalog counts.}
+    \label{fig:v1_bronze}
+    \includegraphics[width=0.6\textwidth]{bronze.png}
+\end{figure}
+
 \begin{itemize}
-  \item \textbf{Repeated observations.} The first version requested the last 100 observations of each station every 30 minutes and de-duplicated only inside a file. Across its 11 Silver files, 4{,}884 of 5{,}500 observation rows (89\%) were repeats. We now request a bounded window (last hour + 3~h overlap) and skip rows already in Silver with the key/hash registry.
-  \item \textbf{Missing is not zero.} The first version filled missing hourly rainfall with 0~mm, which contradicts Workshop~1 finding DQ~\#6. The value now stays NULL with a \texttt{precip\_missing} flag.
-  \item \textbf{All four sources.} The first version stored only the Storm Events \emph{catalog}. Its watermark now drives a daily download of the changed yearly files (Texas flood rows), and GHCN-Daily was added with a 30-day overlap and an optional historical backfill.
-  \item \textbf{Outliers that are the signal.} Removing statistical outliers would delete Harvey and other major floods. Outliers are therefore flagged with IQR and $Z$-score, and only impossible values are removed.
-  \item \textbf{Dependencies.} Installing the whole project \texttt{requirements.txt} (Jupyter, Dash, a different pyarrow) into the Airflow image risked breaking Airflow. The image now installs a short \texttt{requirements-airflow.txt} with the official constraints.
-  \item \textbf{Secrets and stray files.} The webserver secret key and admin password moved from \texttt{docker-compose.yml} to \texttt{.env}, a personal e-mail was removed from the code, and five empty files created by a mistyped shell command (\texttt{--role}, \texttt{--password}, \ldots) were deleted.
-  \item \textbf{Empty responses are valid.} Texas often has no active flood alert. An empty payload passes validation, and Silver simply writes no file for that topic.
+    \item \textbf{Challenge 1 --- Sub-hourly ASOS Null Precipitation vs. Hourly METAR Reports.} In NWS station feeds, 5-minute ASOS observations return \texttt{precipitationLastHour: null}, while hourly METAR reports contain the measured millimeters. Dropping those rows would discard valid temperature and weather-description data. The first version filled them with 0~mm, which hides the missing value and contradicts DQ \#6. \textbf{Resolution:} \texttt{precip\_1h\_mm} stays \texttt{NULL} with \texttt{precip\_missing} and \texttt{is\_metar\_precip\_report}, so the Gold layer in Workshop 3 can sum rainfall only over verified METAR intervals.
+    \item \textbf{Challenge 2 --- Handling Quiet Weather Windows in Active Alerts.} During dry periods, \texttt{/alerts/active?area=TX} often returns an empty feature array. \textbf{Resolution:} the Bronze task queries the rolling recent-alerts endpoint (\texttt{/alerts?area=TX\&limit=250}), which captures recent Flood Advisories and Flash Flood Warnings and still filters out non-flood hazards. An empty payload remains valid, and Silver simply writes no file for that topic.
+    \item \textbf{Challenge 3 --- Duplicates across ingestion batches.} Each first-version run requested the last 100 observations of every station and de-duplicated only inside a file. Across its 11 Silver observation files, 4,884 of 5,500 rows (89\%) were repeats. \textbf{Resolution:} a bounded request window (last hour + 3-hour overlap), plus a key/hash registry that skips rows already in Silver.
+    \item \textbf{Challenge 4 --- FileSensor Idempotency Across Multiple Runs.} The \texttt{FileSensor} returns \texttt{True} whenever any file matches the glob, even one that was already processed. The first version paired it with a check of Bronze stems against Silver file names, but a Bronze file that yields no new rows would then be reprocessed forever. \textbf{Resolution:} \texttt{discover\_unprocessed\_bronze} now uses a manifest of processed Bronze files, and the sensor runs in \texttt{reschedule} mode (instead of \texttt{poke}) to free the worker slot between checks.
+    \item \textbf{Challenge 5 --- Complete source coverage.} The first version stored only the Storm Events \emph{catalog} and did not ingest GHCN-Daily. \textbf{Resolution:} the scraped compile watermark now drives a daily download of the changed yearly files, and GHCN-Daily was added with a 30-day overlap and an optional historical backfill.
+    \item \textbf{Challenge 6 --- Reproducible image and secrets.} Installing the whole project \texttt{requirements.txt} (Jupyter, Dash and a different PyArrow) into the Airflow image risked breaking Airflow's own dependencies. The webserver secret key and the admin password were also written in \texttt{docker-compose.yml}. \textbf{Resolution:} a short \texttt{requirements-airflow.txt} installed with the official constraints, and all secrets moved to the git-ignored \texttt{.env}.
 \end{itemize}
 
-\bibliography{references}
+\newpage
+% Referencias
+\renewcommand\refname{\large\textbf{References}}
+\nocite{*}
+\bibliography{mibibliografia}
+
 \end{document}
