@@ -1,0 +1,18 @@
+{
+ "gold_run": "20261117_192000",
+ "governance_file": "governance_20261117_192000.parquet",
+ "storytelling_file": "storytelling_20261117_192000.parquet",
+ "silver_inputs": {
+  "nws_observations": "6 files, e.g. nws_observations_20261117_190129_from_texas_flood_sources_20261117_190000.parquet",
+  "nws_alerts": "2 files, e.g. nws_alerts_20261117_185318_from_texas_flood_sources_20261117_104500.parquet",
+  "daily_precipitation": "2 files, e.g. daily_precipitation_20261117_185317_from_texas_flood_sources_20261117_000000.parquet",
+  "flood_events": "1 files, e.g. flood_events_20261117_185311_from_texas_flood_sources_20261116_233000.parquet"
+ },
+ "validation": {
+  "governance_rows": 399,
+  "storytelling_rows": 2294,
+  "kpi_fail": [],
+  "errors": []
+ },
+ "written_at_utc": "2026-11-17T19:08:50.197177+00:00"
+}

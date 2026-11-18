@@ -31,7 +31,11 @@ def get(url: str, params: dict | None = None, headers: dict | None = None,
             if resp.status_code < 500 and resp.status_code != 429:
                 return resp
         if attempt < retries - 1:
-            time.sleep(2 ** attempt * 5)
+            wait = 2 ** attempt * 5
+            retry_after = resp.headers.get("Retry-After") if resp is not None else None
+            if retry_after and retry_after.isdigit():      # W3: honour the server's own back-off
+                wait = max(wait, min(int(retry_after), 120))
+            time.sleep(wait)
     return resp
 
 

@@ -22,3 +22,20 @@ airflow/logs/*
 !airflow/logs/.gitkeep
 data/raw/**/*.part
 *.tmp
+workshop_3/report/main.pdf
+workshop_3/report/*.aux
+workshop_3/report/*.bbl
+workshop_3/report/*.blg
+workshop_3/report/*.log
+workshop_3/report/*.out
+workshop_3/report/*.toc
+workshop_2/report/*.aux
+workshop_2/report/*.bbl
+workshop_2/report/*.blg
+workshop_2/report/*.log
+workshop_2/report/*.out
+workshop_2/report/*.toc
+# Spark temporary output of the Gold jobs
+datalake_gold/_tmp_*/
+spark-warehouse/
+metastore_db/

@@ -16,6 +16,12 @@ x-airflow-common: &airflow-common
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session'
     PYTHONPATH: /opt/airflow/src
     AIRFLOW_CONN_FS_DEFAULT: '{"conn_type": "fs", "extra": {"path": "/opt/airflow"}}'
+    # Workshop 3: PySpark in local mode inside the scheduler (LocalExecutor runs the tasks there)
+    SPARK_MASTER: local[*]
+    SPARK_DRIVER_MEMORY: ${SPARK_DRIVER_MEMORY:-1g}
+    SPARK_SHUFFLE_PARTITIONS: "8"
+    SPARK_LOCAL_DIR: /tmp/spark-local
+    GOLD_KEEP_RUNS: "48"
   volumes:
     - ./airflow/dags:/opt/airflow/dags
     - ./src:/opt/airflow/src

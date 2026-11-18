@@ -1,0 +1,21 @@
+\begin{table}[H]\centering\scriptsize
+\caption{Null-rate and sentinel-rate KPIs above zero (required fields are all 0\,\%).}\label{tab:govnull}
+\begin{tabular}{@{}llrp{6.2cm}@{}}\toprule
+Topic & Field & \% & Explanation\\\midrule
+\texttt{nws\_observations} & \texttt{precip\_3h\_mm} & 100 & only reported in 3/6-hourly METAR\\
+\texttt{nws\_observations} & \texttt{precip\_6h\_mm} & 100 & only reported in 6-hourly METAR\\
+\texttt{nws\_observations} & \texttt{precip\_1h\_mm} & 85.22 & 5-minute reports never carry rainfall (DQ \#6)\\
+\texttt{nws\_observations} & \texttt{severity\_level} & 85.22 & undefined when the rainfall is unknown\\
+\texttt{daily\_precipitation} & \texttt{prcp\_zscore} & 77.70 & Z-score only computed on wet days (zero-inflated)\\
+\texttt{flood\_events} & \texttt{impact\_terms} & 58.74 & \\
+\texttt{nws\_alerts} & \texttt{reference\_ids} & 44.26 & \\
+\texttt{nws\_alerts} & \texttt{impact\_terms} & 37.70 & \\
+\texttt{flood\_events} & \texttt{damage\_property\_usd} & 0.79 & damage not estimated by NOAA (DQ \#2)\\
+\texttt{flood\_events} & \texttt{damage\_crops\_usd} & 0.54 & damage not estimated by NOAA (DQ \#2)\\
+\texttt{daily\_precipitation} & \texttt{qflag} (sentinel) & 100 & value replaced by unknown/none/MISSING\\
+\texttt{daily\_precipitation} & \texttt{mflag} (sentinel) & 86.58 & value replaced by unknown/none/MISSING\\
+\texttt{nws\_observations} & \texttt{qc\_flag} (sentinel) & 85.22 & value replaced by unknown/none/MISSING\\
+\texttt{flood\_events} & \texttt{flood\_cause} (sentinel) & 5.62 & value replaced by unknown/none/MISSING\\
+\texttt{nws\_observations} & \texttt{text\_description} (sentinel) & 3.49 & value replaced by unknown/none/MISSING\\
+\texttt{flood\_events} & \texttt{report\_source} (sentinel) & 0.09 & value replaced by unknown/none/MISSING\\
+\bottomrule\end{tabular}\end{table}

@@ -1,0 +1,34 @@
+\begin{table}[H]\centering\scriptsize
+\caption{Other governance KPIs of the Gold run (validity, text, accuracy, timeliness).}\label{tab:govother}
+\begin{tabular}{@{}lllrrrl@{}}\toprule
+KPI & Topic & Field & Value & Num. & Den. & Status\\\midrule
+outlier\_rate & \texttt{nws\_observations} & all\_measurements & 0 & 0 & 372 & info\\
+outlier\_rate & \texttt{nws\_observations} & precip\_1h\_mm & -- & -- & 0 & info\\
+outlier\_rate & \texttt{nws\_observations} & temperature\_c & 0.27 & 1 & 372 & info\\
+outlier\_rate & \texttt{daily\_precipitation} & prcp\_mm (IQR, k=3) & 3.93 & 270 & 6,864 & info\\
+outlier\_rate & \texttt{daily\_precipitation} & prcp\_mm (Z-score, |z|>3) & 0.09 & 6 & 6,864 & info\\
+outlier\_rate & \texttt{daily\_precipitation} & prcp\_mm (NOAA quality flag) & 0 & 0 & 30,786 & info\\
+outlier\_rate & \texttt{flood\_events} & damage\_property\_usd & 3.89 & 74 & 1,900 & info\\
+outlier\_rate & \texttt{flood\_events} & duration\_hours & 2.06 & 165 & 8,000 & info\\
+language\_distribution & \texttt{flood\_events} & en & 100 & 8,000 & 8,000 & \\
+encoding\_repaired\_rate & \texttt{flood\_events} &  & 1.56 & 125 & 8,000 & \\
+language\_distribution & \texttt{nws\_alerts} & en & 100 & 61 & 61 & \\
+encoding\_repaired\_rate & \texttt{nws\_alerts} &  & 0 & 0 & 61 & \\
+ingestion\_lag\_hours & \texttt{nws\_alerts} &  & 0.33 & -- & -- & ok\\
+ingestion\_lag\_hours & \texttt{storm\_events\_catalog} &  & 0.33 & -- & -- & ok\\
+ingestion\_lag\_hours & \texttt{nws\_observations} &  & 0.33 & -- & -- & ok\\
+ingestion\_lag\_hours & \texttt{ghcnd} &  & 8.33 & -- & -- & ok\\
+ingestion\_lag\_hours & \texttt{storm\_events\_details} &  & 8.33 & -- & -- & ok\\
+station\_day\_completeness & \texttt{daily\_precipitation} & USW00012921 & 99.98 & 6,157 & 6,158 & ok\\
+station\_day\_completeness & \texttt{daily\_precipitation} & USW00013904 & 100 & 6,158 & 6,158 & ok\\
+station\_day\_completeness & \texttt{daily\_precipitation} & USW00012960 & 100 & 6,157 & 6,157 & ok\\
+station\_day\_completeness & \texttt{daily\_precipitation} & USW00003927 & 99.97 & 6,156 & 6,158 & ok\\
+station\_day\_completeness & \texttt{daily\_precipitation} & USW00012924 & 100 & 6,158 & 6,158 & ok\\
+precip\_source\_share & \texttt{nws\_observations} & missing & 85.22 & 317 & 372 & info\\
+precip\_source\_share & \texttt{nws\_observations} & metar\_no\_p\_group & 14.78 & 55 & 372 & info\\
+maintenance\_flag\_rate & \texttt{nws\_observations} & KAUS & 8.11 & 6 & 74 & info\\
+maintenance\_flag\_rate & \texttt{nws\_observations} & KIAH & 0 & 0 & 77 & info\\
+maintenance\_flag\_rate & \texttt{nws\_observations} & KSAT & 12.94 & 11 & 85 & info\\
+maintenance\_flag\_rate & \texttt{nws\_observations} & KDFW & 0 & 0 & 69 & info\\
+maintenance\_flag\_rate & \texttt{nws\_observations} & KCRP & 5.97 & 4 & 67 & info\\
+\bottomrule\end{tabular}\end{table}

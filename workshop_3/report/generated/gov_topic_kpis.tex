@@ -1,0 +1,9 @@
+\begin{table}[H]\centering\scriptsize
+\caption{Governance KPIs per Silver topic (\texttt{governance\_20261117\_192000.parquet}). Dup.\ = duplicate rate before / after de-duplication; Schema = schema compliance of files / records; Lag = hours since the newest record.}\label{tab:govtopic}
+\begin{tabular}{@{}lrrrrrrr@{}}\toprule
+Topic & Records & Files & Dup.\ bef.\ \% & Dup.\ aft.\ \% & Schema f.\ \% & Schema r.\ \% & Lag h\\\midrule
+\texttt{nws\_observations} & 372 & 6 & 43.21 & 0 & 100 & 100 & 0.8\\
+\texttt{nws\_alerts} & 61 & 2 & 66.48 & 0 & 100 & 100 & 4.9\\
+\texttt{daily\_precipitation} & 30,786 & 2 & 0.78 & 0 & 100 & 99.99 & 187.3\\
+\texttt{flood\_events} & 8,000 & 1 & 0 & 0 & 100 & 100 & 2,804.0\\
+\bottomrule\end{tabular}\end{table}

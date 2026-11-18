@@ -1,0 +1,9 @@
+\begin{table}[H]\centering\footnotesize
+\caption{Back-test of the rainfall + frequency part of the index (5 counties, county-days 2010--2026; thresholds from 2010--2020). W1 rule: alarm when rain level + top-quartile term $\geq$ 2; rain-only rule: alarm when rain level $\geq$ 2.}\label{tab:backtest}
+\begin{tabular}{@{}llrrrr@{}}\toprule
+Rule & Period & Flood days & Hit rate \% & Alarm days & False alarms \%\\\midrule
+W1 rule & test 2021- & 138 & 81.88 & 1,192 & 90.52\\
+W1 rule & train 2010-2020 & 306 & 84.31 & 2,353 & 89.04\\
+rain-only rule & test 2021- & 138 & 73.19 & 729 & 86.15\\
+rain-only rule & train 2010-2020 & 306 & 71.90 & 1,409 & 84.39\\
+\bottomrule\end{tabular}\end{table}

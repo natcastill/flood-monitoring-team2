@@ -13,6 +13,13 @@ Every 15 minutes (the fastest cadence in the Workshop 1 ingestion contract):
 
 The timestamp in the file name is the UTC end of the run's data interval, so
 re-running the same interval overwrites the same file (idempotent).
+
+Workshop 3 improvements (W3-8 .. W3-10, see the Workshop 3 report):
+  * alerts: incremental window (sent >= window start - 1 h) instead of re-downloading the
+    whole 7-day window every 15 min, and the API "pagination.next" cursor is followed;
+  * scraping: a second, plain-regex pass over the page if BeautifulSoup finds no links;
+  * validation: field coverage of the observations and a header check of the Storm Events
+    files (schema drift), stored in the Bronze metadata for the governance KPIs.
 Trigger with config {"force_all": true} to pull every source immediately, and with
 {"ghcnd_backfill_from": "2010-01-01"} to load the GHCN-Daily history (station x year).
 """
@@ -45,6 +52,12 @@ STORM_EVENTS_URL = "https://www.ncei.noaa.gov/pub/data/swdi/stormevents/csvfiles
 NCEI_ADS_URL = "https://www.ncei.noaa.gov/access/services/data/v1"
 DAILY_HOUR_UTC = 11              # GHCN-Daily and Storm Events details: once a day (06:00 Bogota)
 OBS_OVERLAP = timedelta(hours=3)  # re-read window that catches late or corrected observations
+ALERT_OVERLAP = timedelta(hours=1)  # alerts re-read window (late-published or updated messages)
+MAX_ALERT_PAGES = 10
+STORM_EXPECTED_COLUMNS = {"EVENT_ID", "EPISODE_ID", "STATE", "EVENT_TYPE", "CZ_TYPE", "CZ_FIPS", "CZ_NAME",
+                          "BEGIN_DATE_TIME", "END_DATE_TIME", "CZ_TIMEZONE", "DAMAGE_PROPERTY",
+                          "DAMAGE_CROPS", "DEATHS_DIRECT", "INJURIES_DIRECT", "BEGIN_LAT", "BEGIN_LON",
+                          "FLOOD_CAUSE", "SOURCE", "EVENT_NARRATIVE", "EPISODE_NARRATIVE"}
 STORM_STATE = Path(STATE_DIR) / "storm_events_compiled.json"
 
 
@@ -75,7 +88,7 @@ def _due(ctx: dict, hourly: bool = False, daily: bool = False) -> bool:
                                      description="Optional YYYY-MM-DD: load GHCN-Daily from this date "
                                                  "(one request per station x year) instead of the last 30 days"),
     },
-    tags=["workshop2", "bronze", "texas-flood"],
+    tags=["workshop3", "bronze", "texas-flood"],
 )
 def bronze_flood_ingestion():
 
@@ -124,14 +137,29 @@ def bronze_flood_ingestion():
 
     @task
     def extract_nws_alerts(ctx: dict) -> list:
-        """Recent Texas alerts (all events and message types) from the NWS REST API."""
-        # /alerts?area=TX returns the rolling recent window (active ones included), so the
-        # Silver layer can follow Update/Cancel chains; duplicates are removed in Silver.
-        resp = get("https://api.weather.gov/alerts", params={"area": "TX", "limit": 250},
-                   headers=NWS_HEADERS)
-        resp.raise_for_status()
-        features = resp.json().get("features", [])
-        logger.info("Fetched %d raw alerts for TX.", len(features))
+        """Texas alerts (all events and message types) from the NWS REST API."""
+        # Workshop 2 downloaded the whole rolling 7-day window on every run, so each Bronze file
+        # repeated ~170 alerts that Silver then discarded. Now a normal run asks only for alerts
+        # sent since the window start minus a 1-hour overlap; force_all keeps the 7-day window.
+        params = {"area": "TX", "limit": 250}
+        if not ctx["force_all"]:
+            since = datetime.fromisoformat(ctx["window_start"]) - ALERT_OVERLAP
+            params["start"] = since.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        url, features, pages = "https://api.weather.gov/alerts", [], 0
+        while url and pages < MAX_ALERT_PAGES:
+            resp = get(url, params=params, headers=NWS_HEADERS)
+            resp.raise_for_status()
+            body = resp.json()
+            page = body.get("features", [])
+            pages += 1
+            if not page:
+                break
+            features.extend(page)
+            if len(page) < 250:      # last page: no need to ask for an empty one
+                break
+            url, params = (body.get("pagination") or {}).get("next"), None   # cursor keeps the filters
+        logger.info("Fetched %d raw alerts for TX in %d page(s) (since %s).", len(features), pages,
+                    "7-day window" if ctx["force_all"] else since.isoformat())
         return features
 
     @task
@@ -144,17 +172,23 @@ def bronze_flood_ingestion():
         resp.raise_for_status()
         soup = BeautifulSoup(resp.text, "html.parser")
         pattern = re.compile(r"StormEvents_details-ftp_v1\.0_d(20[1-9]\d)_c(\d{8})\.csv\.gz")
+        names = [pattern.search(link["href"]).group(0) for link in soup.find_all("a", href=True)
+                 if pattern.search(link["href"])]
+        method = "beautifulsoup"
+        if not names:   # W3-10: the listing layout changed -> fall back to the raw text
+            names, method = [m.group(0) for m in pattern.finditer(resp.text)], "regex_fallback"
         catalog = []
-        for link in soup.find_all("a", href=True):
-            match = pattern.search(link["href"])
-            if match:
-                catalog.append({
-                    "filename": link["href"],
-                    "year": int(match.group(1)),
-                    "compile_watermark": match.group(2),
-                    "download_url": f"{STORM_EVENTS_URL}{link['href']}",
-                })
-        logger.info("Scraped %d Storm Events yearly details files (2010-present).", len(catalog))
+        for name in sorted(set(names)):
+            match = pattern.fullmatch(name)
+            catalog.append({
+                "filename": name,
+                "year": int(match.group(1)),
+                "compile_watermark": match.group(2),
+                "download_url": f"{STORM_EVENTS_URL}{name}",
+                "scrape_method": method,
+            })
+        logger.info("Scraped %d Storm Events yearly details files (2010-present) with %s.",
+                    len(catalog), method)
         return catalog
 
     @task
@@ -234,6 +268,19 @@ def bronze_flood_ingestion():
         check("storm_events_details", None if storm_details is None else storm_details["records"],
               ("EVENT_ID", "EVENT_TYPE", "BEGIN_DATE_TIME", "STATE"))
         check("ghcnd", ghcnd, ("DATE", "STATION"))
+        # W3-9: schema drift. Field coverage of the observations (precipitationLastHour only
+        # comes in METAR reports) and the Storm Events header against the expected columns.
+        if obs_props:
+            n = len(obs_props)
+            report["nws_observations"]["field_coverage"] = {
+                k: round(sum(k in p for p in obs_props) / n, 4)
+                for k in ("precipitationLastHour", "rawMessage", "temperature", "textDescription")}
+        if storm_details is not None and storm_details["records"]:
+            cols = set(storm_details["records"][0])
+            missing_cols = sorted(STORM_EXPECTED_COLUMNS - cols)
+            report["storm_events_details"]["missing_columns"] = missing_cols
+            if missing_cols:
+                errors.append(f"storm_events_details: expected columns missing {missing_cols}")
         if not storm_catalog:
             errors.append("storm_events_catalog: scraping returned no files (page layout changed?)")
         usable = sum(v.get("records", 0) for v in report.values())

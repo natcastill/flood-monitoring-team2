@@ -1,0 +1,20 @@
+\begin{table}[H]\centering\footnotesize
+\caption{Data-lake files used in this report (Bronze runs of 16--17 November 2026, Silver v0.3 rebuilt from them, one Gold run).}\label{tab:inventory}
+\begin{tabular}{@{}llr@{}}\toprule
+Layer & File(s) & MB\\\midrule
+Bronze & \texttt{texas\_flood\_sources\_20261116\_233000.json} & 17.08\\
+Bronze & \texttt{texas\_flood\_sources\_20261116\_234500.json} & 0.56\\
+Bronze & \texttt{texas\_flood\_sources\_20261117\_000000.json} & 7.40\\
+Bronze & \texttt{texas\_flood\_sources\_20261117\_104500.json} & 0.08\\
+Bronze & \texttt{texas\_flood\_sources\_20261117\_110000.json} & 0.33\\
+Bronze & \texttt{texas\_flood\_sources\_20261117\_170000.json} & 0.30\\
+Bronze & \texttt{texas\_flood\_sources\_20261117\_174500.json} & 0.05\\
+Bronze & \texttt{texas\_flood\_sources\_20261117\_180000.json} & 0.30\\
+Bronze & \texttt{texas\_flood\_sources\_20261117\_190000.json} & 0.25\\
+Silver & \texttt{nws\_observations\_*.parquet} (6 files, 372 rows) & 0.11\\
+Silver & \texttt{nws\_alerts\_*.parquet} (2 files, 61 rows) & 0.08\\
+Silver & \texttt{daily\_precipitation\_*.parquet} (2 files, 30,786 rows) & 2.40\\
+Silver & \texttt{flood\_events\_*.parquet} (1 files, 8,000 rows) & 2.94\\
+Gold & \texttt{governance\_20261117\_192000.parquet} (399 rows) & 0.011\\
+Gold & \texttt{storytelling\_20261117\_192000.parquet} (2,294 rows) & 0.034\\
+\bottomrule\end{tabular}\end{table}
