@@ -22,6 +22,7 @@
 \usepackage[english]{babel}
 \usepackage{booktabs}
 \usepackage{tabularx}
+\usepackage{xltabular} % tables that continue on the next page
 \usepackage{array}
 \usepackage{amsmath}
 \usepackage{listings}
@@ -107,15 +108,22 @@ Silver was then rebuilt from the immutable Bronze files with preprocessing v0.3,
 \section{\large 2. Pipeline Improvements Based on Experimentation}
 We reviewed the nine Bronze files of 16--17 November 2026 and the Silver files of Workshop~2 with \texttt{notebooks/03\_data\_quality\_findings.ipynb}. Table~\ref{tab:improvements} lists what we observed, what we changed and why. Each change is labeled in the code (\texttt{W3-n}).
 
-\begin{table}[H]
-\centering
-\scriptsize
-\caption{Before/after comparison of the Bronze and Silver pipelines (Workshop~2 = before, Workshop~3 = after).}
-\label{tab:improvements}
-\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{0.8cm} >{\raggedright\arraybackslash}p{3.4cm} >{\raggedright\arraybackslash}p{4.4cm} >{\raggedright\arraybackslash}X}
+{\scriptsize
+\begin{xltabular}{\textwidth}{>{\raggedright\arraybackslash}p{0.8cm} >{\raggedright\arraybackslash}p{3.4cm} >{\raggedright\arraybackslash}p{4.4cm} >{\raggedright\arraybackslash}X}
+\caption{Before/after comparison of the Bronze and Silver pipelines (Workshop~2 = before, Workshop~3 = after).}\label{tab:improvements}\\
 \toprule
 \textbf{\#} & \textbf{Observed in Workshop~2} & \textbf{Change in Workshop~3} & \textbf{Why / effect} \\
 \midrule
+\endfirsthead
+\caption[]{(continued)}\\
+\toprule
+\textbf{\#} & \textbf{Observed in Workshop~2} & \textbf{Change in Workshop~3} & \textbf{Why / effect} \\
+\midrule
+\endhead
+\midrule\multicolumn{4}{r}{\textit{continued on next page}}\\
+\endfoot
+\bottomrule
+\endlastfoot
 W3-1 Silver & \texttt{precip\_1h\_mm} was null in 100\,\% of the rows, METAR hours included. The raw JSON shows that 5-minute reports do not even contain the key, and METAR reports carry it with \texttt{value = null}. & The rainfall is read from the METAR \texttt{rawMessage}: the \texttt{Pxxxx} group gives hundredths of an inch; an automated (\texttt{AO2}) hourly report without it means 0~mm; \texttt{PNO} means the gauge is down \citep{ofcm2019}. New columns \texttt{precip\_source}, \texttt{precip\_inferred\_zero}. & Null rate in METAR hours: 100\,\% $\rightarrow$ 0\,\%. 5-minute reports stay \texttt{NULL} (still not 0~mm). US2 and the index can now use the hourly rainfall. \\
 \addlinespace
 W3-2 Silver & 6--13\,\% of the METAR reports of KAUS, KSAT and KCRP end with \texttt{\$}. & New flag \texttt{maintenance\_flag}. & The \texttt{\$} sign means the station needs maintenance: its values deserve less trust. \\
@@ -135,9 +143,7 @@ W3-8 Bronze & Each Bronze run downloaded the full 7-day alert window again: 172 
 W3-9 Bronze & No check that the sources keep their structure (schema drift). & \texttt{validate\_bronze} stores the field coverage of the observations (e.g., \texttt{precipitationLastHour}: 13\,\%) and checks 20 expected Storm Events columns. & Feeds the governance KPIs; a missing column now fails the run. \\
 \addlinespace
 W3-10 Bronze & The scraper depended only on the \texttt{<a>} tags; HTTP retries ignored the server's \texttt{Retry-After}. & Plain-regex fallback if BeautifulSoup finds no links (\texttt{scrape\_method} recorded); \texttt{Retry-After} honored (max.\ 120~s). & More robust scraping and back-off. \\
-\bottomrule
-\end{tabularx}
-\end{table}
+\end{xltabular}}
 
 \noindent Two structural changes support the Gold layer:
 \begin{itemize}
@@ -153,15 +159,22 @@ Table~\ref{tab:findings} is the structured report of the Silver data-quality fin
 
 \input{generated/inventory.tex}
 
-\begin{table}[H]
-\centering
-\scriptsize
-\caption{Data-quality findings in Silver: field, issue, frequency, handling and resulting governance KPI.}
-\label{tab:findings}
-\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{2.6cm} >{\raggedright\arraybackslash}p{1.6cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}p{2.5cm}}
+{\scriptsize
+\begin{xltabular}{\textwidth}{>{\raggedright\arraybackslash}p{2.6cm} >{\raggedright\arraybackslash}p{1.6cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}p{2.5cm}}
+\caption{Data-quality findings in Silver: field, issue, frequency, handling and resulting governance KPI.}\label{tab:findings}\\
 \toprule
 \textbf{Field / topic} & \textbf{Nature} & \textbf{Frequency / severity} & \textbf{Handling} & \textbf{KPI} \\
 \midrule
+\endfirsthead
+\caption[]{(continued)}\\
+\toprule
+\textbf{Field / topic} & \textbf{Nature} & \textbf{Frequency / severity} & \textbf{Handling} & \textbf{KPI} \\
+\midrule
+\endhead
+\midrule\multicolumn{5}{r}{\textit{continued on next page}}\\
+\endfoot
+\bottomrule
+\endlastfoot
 \texttt{precip\_1h\_mm} (observations) & nulls (structural) & 85.2\,\% of rows: every 5-minute report; METAR hours 0\,\% after W3-1 & keep \texttt{NULL} + \texttt{precip\_missing}; METAR value parsed & null rate; rainfall source share \\
 \texttt{precip\_3h/6h\_mm} & nulls (structural) & 100\,\% in the runs analyzed & kept, documented & null rate \\
 \texttt{qc\_flag}, \texttt{mflag}, \texttt{qflag} & sentinel values & 85--100\,\% \texttt{MISSING}/\texttt{none} & sentinel instead of \texttt{NULL} & sentinel rate \\
@@ -178,9 +191,7 @@ NWS observations & duplicates & 43.2\,\% repeated across runs (3-hour overlap wi
 \texttt{rawMessage} & accuracy & 6--13\,\% \texttt{\$} reports at 3 stations & \texttt{maintenance\_flag} & maintenance flag rate \\
 all topics & schema deviation & key absent vs.\ \texttt{null}; v0.2 vs.\ v0.3 files & coverage check; replay & schema compliance \\
 Bronze runs & timeliness & 9 runs on 2 days vs.\ 96 expected per day & documented (laptop stack) & ingestion compliance \\
-\bottomrule
-\end{tabularx}
-\end{table}
+\end{xltabular}}
 
 \begin{figure}[H]
     \centering
@@ -209,15 +220,22 @@ Bronze runs & timeliness & 9 runs on 2 days vs.\ 96 expected per day & documente
 \section{\large 4. Governance KPI Definition}
 The governance summary is a tidy table with one row per KPI value. Its columns are \texttt{kpi\_group}, \texttt{kpi\_name}, \texttt{topic}, \texttt{field}, \texttt{period\_grain}, \texttt{period\_start}, \texttt{value}, \texttt{numerator}, \texttt{denominator}, \texttt{unit}, \texttt{threshold}, \texttt{status} (ok, warn, fail or info), \texttt{note} and \texttt{gold\_run\_ts}. A dashboard card or chart is a filter on \texttt{kpi\_name}. The KPI groups follow the data-quality dimensions of \citet{wang1996} and ISO/IEC~25012 \citep{iso25012}.
 
-\begin{table}[H]
-\centering
-\scriptsize
-\caption{Governance KPIs: computation in PySpark and justification.}
-\label{tab:kpis}
-\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{3.0cm} >{\raggedright\arraybackslash}p{5.6cm} >{\raggedright\arraybackslash}X}
+{\scriptsize
+\begin{xltabular}{\textwidth}{>{\raggedright\arraybackslash}p{3.0cm} >{\raggedright\arraybackslash}p{5.6cm} >{\raggedright\arraybackslash}X}
+\caption{Governance KPIs: computation in PySpark and justification.}\label{tab:kpis}\\
 \toprule
 \textbf{KPI (group)} & \textbf{Computation (PySpark)} & \textbf{Justification (finding)} \\
 \midrule
+\endfirsthead
+\caption[]{(continued)}\\
+\toprule
+\textbf{KPI (group)} & \textbf{Computation (PySpark)} & \textbf{Justification (finding)} \\
+\midrule
+\endhead
+\midrule\multicolumn{3}{r}{\textit{continued on next page}}\\
+\endfoot
+\bottomrule
+\endlastfoot
 \texttt{null\_rate} (completeness) & per topic and field: \texttt{sum(isNull)} (or empty array) / rows; threshold 0\,\% for required fields & structural nulls of rainfall and Z-score; damage not estimated \\
 \texttt{sentinel\_rate} & share of \texttt{unknown}/\texttt{none}/\texttt{MISSING} in string fields & 85--100\,\% sentinel QC flags; \texttt{flood\_cause} unknown \\
 \texttt{station\_day\_completeness} & distinct \texttt{obs\_date} / days between first and last date, per station & 3 missing GHCN-Daily days \\
@@ -230,9 +248,7 @@ The governance summary is a tidy table with one row per KPI value. Its columns a
 \texttt{text\_length\_words}, \texttt{language\_distribution}, \texttt{encoding\_repaired\_rate} (text) & mean, \texttt{percentile\_approx} median, min, max of word counts per source and year/day; share per language; share of repaired texts & repetition, encoding, alert vs.\ narrative length \\
 \texttt{ingestion\_frequency\_compliance}, \texttt{ingestion\_lag\_hours}, \texttt{record\_lag\_hours} (timeliness) & Bronze metadata read with an explicit JSON schema: successful pulls per day vs.\ contract (96, 24, 1); hours since the last successful pull; hours since the newest record & US5: ``when each source was last updated''; GHCN 7-day delay \\
 \texttt{precip\_source\_share}, \texttt{maintenance\_flag\_rate} (accuracy) & share per \texttt{precip\_source}; share of \texttt{\$} reports per station & W3-1, W3-2 \\
-\bottomrule
-\end{tabularx}
-\end{table}
+\end{xltabular}}
 
 \noindent Current values from the Gold run are in Tables~\ref{tab:govtopic}--\ref{tab:goving}.
 
@@ -261,15 +277,22 @@ We defined the narrative first and then the aggregations that support it. The fu
 \subsection{5.2 Aggregations}
 The storytelling summary is also a tidy table. Its columns are \texttt{section}, \texttt{metric}, \texttt{user\_story}, \texttt{period\_grain}, \texttt{period\_start}, \texttt{county}, \texttt{station\_id}, \texttt{category}, \texttt{term}, \texttt{value}, \texttt{count}, \texttt{pct}, \texttt{rank}, \texttt{label}, \texttt{latitude}, \texttt{longitude} and \texttt{gold\_run\_ts}. Each section maps to one dashboard element (Table~\ref{tab:sections}).
 
-\begin{table}[H]
-\centering
-\scriptsize
-\caption{Storytelling sections: aggregation, user story and dashboard element.}
-\label{tab:sections}
-\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{2.7cm} >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}p{1.0cm} >{\raggedright\arraybackslash}p{3.0cm}}
+{\scriptsize
+\begin{xltabular}{\textwidth}{>{\raggedright\arraybackslash}p{2.7cm} >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}p{1.0cm} >{\raggedright\arraybackslash}p{3.0cm}}
+\caption{Storytelling sections: aggregation, user story and dashboard element.}\label{tab:sections}\\
 \toprule
 \textbf{Section} & \textbf{Aggregation (PySpark)} & \textbf{Story} & \textbf{Dashboard element} \\
 \midrule
+\endfirsthead
+\caption[]{(continued)}\\
+\toprule
+\textbf{Section} & \textbf{Aggregation (PySpark)} & \textbf{Story} & \textbf{Dashboard element} \\
+\midrule
+\endhead
+\midrule\multicolumn{4}{r}{\textit{continued on next page}}\\
+\endfoot
+\bottomrule
+\endlastfoot
 \texttt{headline} & totals: events, events per year, flash-flood share, damage, deaths, counties & US6 & KPI cards \\
 \texttt{severity\_distribution} & count and \% per severity level, overall and per year (``sentiment distribution''); alerts per event type & US6, US1 & stacked bars \\
 \texttt{trend} & events and average severity per month; damage per month (``sentiment trend'', ``volume trends'') & US6 & time series \\
@@ -285,9 +308,7 @@ The storytelling summary is also a tidy table. Its columns are \texttt{section},
 \texttt{flood\_risk\_index} & index per county with all its inputs & US4 & risk table / map \\
 \texttt{fri\_backtest} & hit and false-alarm rates of the index on history, train vs.\ test & US4 & validation panel \\
 \texttt{narrative} & four generated sentences & all & story text \\
-\bottomrule
-\end{tabularx}
-\end{table}
+\end{xltabular}}
 
 \subsection{5.3 Flood Risk Index and its back-test}
 The index follows the Workshop~1 rule. The rain level is 3 if $P_{24} \geq 99$ or $R_{24} \geq 75$~mm, 2 if $P_{24} \geq 95$ or $R_{7d} \geq 100$~mm, 1 if $P_{24} \geq 90$, and 0 otherwise. The score is $\max(A, \text{rain level})$ plus 1 when the county is in the top quartile of flood frequency. The FRI is LOW for scores 0--1, MEDIUM for 2 and HIGH for 3 or more. $R_{24}$ is the larger of the latest GHCN-Daily total and the NWS METAR total of the last 24~hours, $P_{24}$ is its percentile against the same station and month in earlier years, and $A$ is the highest alert level in effect in the county.
@@ -354,7 +375,7 @@ Retries: 1 after 3 minutes; timeout: 30 minutes. File names: \texttt{governance\
 
 % ===========================================================================
 \section{\large 7. Results Evidence}
-The Gold DAG ran successfully on 17 November 2026 (run 19:20 UTC), after a Bronze run at 19:00 and a Silver run at 19:10 that processed it. The validation task logged \texttt{governance\_rows=\GovRows}, \texttt{storytelling\_rows=\StoryRows}, \texttt{kpi\_fail=[]} and \texttt{errors=[]}. Figures~\ref{fig:govcontent} and~\ref{fig:storycontent} show the content of the two Gold Parquet files read with Pandas, and Figure~\ref{fig:preview} is the preview of \texttt{notebooks/04\_gold\_preview.ipynb}.
+The Gold DAG ran successfully on 17 November 2026 (run 19:20 UTC), after a Bronze run at 19:00 and a Silver run at 19:10 that processed it. The validation task logged \texttt{governance\_rows=\GovRows}, \texttt{storytelling\_rows=\StoryRows}, \texttt{kpi\_fail=[]} and \texttt{errors=[]}. Figures~\ref{fig:govcontent} and~\ref{fig:storycontent} show the content of the two Gold Parquet files read with Pandas, and Figure~\ref{fig:preview} is the preview of \texttt{notebooks/04\_gold\_preview.ipynb}. Figures~7--10 come from a later run of the same DAGs in the team's Docker stack (17 November 2026, 22:47 Bogotá time = 18 November, 03:47 UTC), which confirms that the PySpark image works on a team laptop.
 
 \begin{figure}[H]
     \centering
