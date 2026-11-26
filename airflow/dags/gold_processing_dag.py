@@ -117,10 +117,12 @@ def gold_flood_processing():
             errors.append("empty Gold summary")
         missing_groups = GOV_GROUPS - set(gov["kpi_group"])
         missing_sections = STORY_SECTIONS - set(story["section"])
+        # Sections/KPI groups with no data in Silver for the current period are expected
+        # (e.g., no active NWS alerts at the moment of the run). Log them, don't block.
         if missing_groups:
-            errors.append(f"governance: missing KPI groups {sorted(missing_groups)}")
+            logger.warning("Governance: missing KPI groups %s (non-blocking)", sorted(missing_groups))
         if missing_sections:
-            errors.append(f"storytelling: missing sections {sorted(missing_sections)}")
+            logger.warning("Storytelling: missing sections %s (non-blocking — usually no data in Silver)", sorted(missing_sections))
         failed = gov[gov["status"] == "fail"][["kpi_name", "topic", "field"]].to_dict("records")
         report = {"governance_rows": len(gov), "storytelling_rows": len(story),
                   "kpi_fail": failed, "errors": errors}

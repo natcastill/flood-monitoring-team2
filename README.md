@@ -143,3 +143,43 @@ The report is written in LaTeX (`report/`). After editing it, compile `report/ma
 | Silver rebuilt with v0.3 | `datalake_silver/*.parquet` (the Workshop 2 Silver files are in the Git history) |
 | Tests | `tests/test_text.py`, `tests/test_preprocessing.py`, `tests/test_gold.py` |
 
+---
+
+## Workshop 4 — Interactive Dashboards (Plotly Dash)
+
+Two independent dashboards visualise the Gold layer in real time:
+
+| Dashboard | Port | Audience |
+|---|---|---|
+| Governance | http://localhost:8050 | Technical reviewer / data engineer |
+| Storytelling | http://localhost:8051 | Functional user (analyst) |
+
+Both read **only** from `datalake_gold/*.parquet` (Gold layer is the single source of truth for the presentation layer).
+
+### Run the dashboards
+
+```bash
+# One-time setup
+python -m venv .venv-dashboard
+.venv-dashboard/bin/pip install dash dash-bootstrap-components plotly pandas pyarrow
+
+# Governance dashboard (terminal 1)
+.venv-dashboard/bin/python -m dashboard.governance_app
+
+# Storytelling dashboard (terminal 2)
+.venv-dashboard/bin/python -m dashboard.storytelling_app
+
+Or activate the venv first:
+bash
+
+source .venv-dashboard/bin/activate.fish   # fish
+source .venv-dashboard/bin/activate        # bash/zsh
+python -m dashboard.governance_app
+python -m dashboard.storytelling_app
+
+Refresh with new Gold data
+
+The dashboards auto-select the most recent governance_*.parquet and storytelling_*.parquet on page load. To refresh after a new Gold DAG run, simply reload the browser (Ctrl+Shift+R).
+Requirements
+
+All dashboard dependencies are listed in requirements.txt. Minimum: dash, dash-bootstrap-components, plotly, pandas, pyarrow.
