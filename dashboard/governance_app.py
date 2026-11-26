@@ -11,6 +11,7 @@ Run:
 from __future__ import annotations
 
 import dash
+import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
 from dash import Input, Output, dash_table, dcc, html
 
@@ -33,6 +34,7 @@ app = dash.Dash(
     title="Flood Monitoring · Governance Dashboard",
     update_title=None,
     suppress_callback_exceptions=True,
+    external_stylesheets=[dbc.themes.FLATLY],
 )
 
 TEAM_NAME = "Team 2 — Oscar Durán, Laura Pardo, Nicolás Romero"
@@ -350,6 +352,17 @@ def _load_and_build():
 _df, _ts, _layout = _load_and_build()
 app.layout = _layout
 
+# Style the html body (browser default is white/black; we want light grey)
+app.index_string = """
+<!DOCTYPE html>
+<html>
+    <head>{%metas%}<title>{%title%}</title>{%favicon%}{%css%}</head>
+    <body style="margin:0; background-color:#F7F9FB;">
+        {%app_entry%}
+        <footer>{%config%}{%scripts%}{%renderer%}</footer>
+    </body>
+</html>
+"""
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8050, debug=False)
