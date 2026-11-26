@@ -144,17 +144,44 @@ def _fig_severity(df) -> go.Figure:
 
 
 def _fig_trend(df) -> go.Figure:
-    d = st_trend_monthly(df)
-    d = d.dropna(subset=["events_per_month"])
+    d = st_trend_monthly(df).dropna(subset=["avg_severity"]).sort_values("period_start")
     fig = go.Figure()
     fig.add_trace(go.Scatter(
-        x=d["period_start"], y=d["events_per_month"],
+        x=d["period_start"], y=d["avg_severity"],
         mode="lines+markers",
-        name="Flood events",
+        name="Avg severity",
         line=dict(color=theme.BLUE, width=2),
         marker=dict(size=4),
-        fill="tozeroy", fillcolor="rgba(0,114,178,0.12)",
-        hovertemplate="<b>%{x|%b %Y}</b><br>%{y:.0f} events<extra></extra>",
+        fill="tozeroy", fillcolor="rgba(0,114,178,0.10)",
+        hovertemplate="<b>%{x|%b %Y}</b><br>Avg severity: %{y:.2f}<extra></extra>",
+    ))
+    # Reference lines at severity levels
+    for level, name, color in [(1, "Minor", theme.GREEN),
+                                (2, "Moderate", theme.AMBER),
+                                (3, "Severe", theme.VERMILLION)]:
+        fig.add_hline(y=level, line_dash="dash", line_color=color, opacity=0.55,
+                      annotation_text=name, annotation_position="right",
+                      annotation_font_size=10)
+    fig.update_layout(
+        **theme.CHART_LAYOUT,
+        xaxis_title="Month",
+        yaxis_title="Average severity (0–3)",
+        yaxis=dict(range=[0, 3.2]),
+        height=380,
+        showlegend=False,
+    )
+    return fig
+
+
+def _fig_volume_activity(df) -> go.Figure:
+    d = st_trend_monthly(df).dropna(subset=["events_count"]).sort_values("period_start")
+    threshold = d["events_count"].quantile(0.90)
+    colors = [theme.VERMILLION if v >= threshold else theme.LIGHT_BLUE
+              for v in d["events_count"]]
+    fig = go.Figure(go.Bar(
+        x=d["period_start"], y=d["events_count"],
+        marker_color=colors,
+        hovertemplate="<b>%{x|%b %Y}</b><br>%{y:.0f} flood events<extra></extra>",
     ))
     fig.update_layout(
         **theme.CHART_LAYOUT,
@@ -163,31 +190,9 @@ def _fig_trend(df) -> go.Figure:
         height=380,
         showlegend=False,
     )
-    return fig
-
-
-def _fig_volume_activity(df) -> go.Figure:
-    d = st_trend_monthly(df)
-    d = d.dropna(subset=["events_per_month"])
-    # Highlight months in the top 10% as "activity peaks"
-    threshold = d["events_per_month"].quantile(0.90)
-    colors = [theme.VERMILLION if v >= threshold else theme.LIGHT_BLUE
-              for v in d["events_per_month"]]
-    fig = go.Figure(go.Bar(
-        x=d["period_start"], y=d["events_per_month"],
-        marker_color=colors,
-        hovertemplate="<b>%{x|%b %Y}</b><br>%{y:.0f} events<extra></extra>",
-    ))
-    fig.update_layout(
-        **theme.CHART_LAYOUT,
-        xaxis_title="Month",
-        yaxis_title="Events per month",
-        height=380,
-        showlegend=False,
-    )
     fig.add_annotation(
         x=1, y=1.05, xref="paper", yref="paper",
-        text="🔥 Red bars = top 10% activity months",
+        text="🔥 Red bars = top 10% busiest months",
         showarrow=False, font=dict(size=11, color=theme.VERMILLION),
         xanchor="right",
     )
@@ -196,12 +201,17 @@ def _fig_volume_activity(df) -> go.Figure:
 
 def _fig_keywords(df) -> go.Figure:
     d = st_top_keywords(df, n=12).sort_values("count", ascending=True)
-    # Color by associated severity (value column = avg severity 0-3)
+    sev = d["value"].dropna()
+    # Adaptive thresholds: use terciles of the actual severity values
+    if len(sev) >= 3:
+        q1, q2 = sev.quantile(0.33), sev.quantile(0.67)
+    else:
+        q1, q2 = 2.0, 2.5
     colors = []
-    for v in d["value"].fillna(0):
-        if v >= 2.5:
-            colors.append(theme.VERMILLION)
-        elif v >= 1.5:
+    for v in d["value"].fillna(sev.median() if len(sev) else 2.0):
+        if v > q2:
+            colors.append(theme.VERMILLION)  # high severity context
+        elif v > q1:
             colors.append(theme.AMBER)
         else:
             colors.append(theme.GREEN)
@@ -211,7 +221,8 @@ def _fig_keywords(df) -> go.Figure:
         text=[f"{int(c):,}" for c in d["count"]],
         textposition="outside",
         customdata=d["value"],
-        hovertemplate="<b>%{y}</b><br>%{x:,.0f} mentions<br>Avg severity: %{customdata:.2f}<extra></extra>",
+        hovertemplate="<b>%{y}</b><br>%{x:,.0f} mentions<br>"
+                      "Avg severity: %{customdata:.2f}<extra></extra>",
     ))
     fig.update_layout(
         **theme.CHART_LAYOUT,
@@ -224,8 +235,7 @@ def _fig_keywords(df) -> go.Figure:
 
 
 def _fig_sources(df) -> go.Figure:
-    d = st_source_comparison(df)
-    d = d.dropna(subset=["category"])
+    d = st_source_comparison(df).dropna(subset=["category"])
     labels = [str(c).replace("_", " ").title() for c in d["category"]]
     fig = go.Figure()
     fig.add_trace(go.Bar(
@@ -235,13 +245,29 @@ def _fig_sources(df) -> go.Figure:
         text=[f"{int(v):,}" for v in d["count"]],
         textposition="outside",
         hovertemplate="<b>%{x}</b><br>%{y:,.0f} records<extra></extra>",
+        yaxis="y",
     ))
+    if d["value"].notna().any():
+        fig.add_trace(go.Scatter(
+            x=labels, y=d["value"],
+            name="Avg severity",
+            mode="markers+lines",
+            marker=dict(size=13, color=theme.VERMILLION, symbol="diamond",
+                        line=dict(color="white", width=1.5)),
+            line=dict(color=theme.VERMILLION, width=2, dash="dot"),
+            hovertemplate="<b>%{x}</b><br>Avg severity: %{y:.2f}<extra></extra>",
+            yaxis="y2",
+        ))
+        fig.update_layout(
+            yaxis2=dict(title="Avg severity (0–3)", overlaying="y", side="right",
+                        range=[0, 3.2], showgrid=False),
+        )
     fig.update_layout(
         **theme.CHART_LAYOUT,
         xaxis_title="Data source",
         yaxis_title="Records ingested",
-        height=380,
-        showlegend=False,
+        height=400,
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
     )
     return fig
 
@@ -326,14 +352,15 @@ def build_layout(df, last_updated):
             html.Div(
                 [
                     html.Div(
-                        _chart_card("When do floods happen?",
-                                    "Monthly flood events across Texas — reveals seasonal patterns.",
+                        _chart_card("How has flood severity trended over time?",
+                                    "Average severity (0–3) per month. Dashed lines mark the minor / "
+                                    "moderate / severe thresholds.",
                                     _fig_trend(df), "chart-trend"),
                         className="col-lg-6",
                     ),
                     html.Div(
-                        _chart_card("Where is public discussion concentrated?",
-                                    "Record volume per month; red bars mark the top 10% activity months.",
+                        _chart_card("When do floods happen?",
+                                    "Flood events per month. Red bars mark the top 10% busiest months.",
                                     _fig_volume_activity(df), "chart-volume"),
                         className="col-lg-6",
                     ),

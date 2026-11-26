@@ -153,13 +153,29 @@ def st_severity_distribution(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def st_trend_monthly(df: pd.DataFrame) -> pd.DataFrame:
-    """Events per month + damage over time."""
+    """Monthly timeline with BOTH events count and average severity.
+
+    Gold uses long format with two useful columns per metric:
+    - value: avg severity (0-3) for events_per_month, or USD for damage
+    - count: number of events (only for events_per_month)
+
+    Returns one row per month with columns:
+    events_count, avg_severity, damage_usd
+    """
     d = df[(df["section"] == "trend") & (df["period_grain"] == "month")].copy()
     d = d.dropna(subset=["period_start"])
     d["period_start"] = pd.to_datetime(d["period_start"])
-    piv = d.pivot_table(index="period_start", columns="metric",
-                        values="value", aggfunc="sum").reset_index()
-    return piv.sort_values("period_start")
+
+    events = d[d["metric"] == "events_per_month"].copy()
+    events = events.rename(columns={"value": "avg_severity", "count": "events_count"})
+    events = events[["period_start", "events_count", "avg_severity"]]
+
+    damage = d[d["metric"] == "damage_usd_per_month"].copy()
+    damage = damage.rename(columns={"value": "damage_usd"})
+    damage = damage[["period_start", "damage_usd"]]
+
+    out = events.merge(damage, on="period_start", how="outer").sort_values("period_start")
+    return out.reset_index(drop=True)
 
 
 def st_top_keywords(df: pd.DataFrame, n: int = 12) -> pd.DataFrame:
