@@ -25,13 +25,30 @@ The URLs above are API base endpoints: opening them without parameters returns a
 
 All sources are U.S. Government works (public domain); attribution in `config/sources.yaml`.
 
-## Pipeline status (Workshop 3)
+## Pipeline status (Workshop 4)
 | Layer | Status | Where |
 |---|---|---|
 | Bronze (raw JSON) | working: `bronze_flood_ingestion_dag` (every 15 min, incremental alerts, schema-drift checks) | `datalake_bronze/texas_flood_sources_YYYYMMDD_HHMMSS.json` |
 | Silver (clean Parquet) | working: `silver_flood_processing_dag` (FileSensor, every 10 min), preprocessing v0.3 | `datalake_silver/<topic>_YYYYMMDD_HHMMSS_from_<bronze>.parquet` |
 | Gold (governance + storytelling) | working: `gold_flood_processing_dag` (PySpark local mode, hourly at :20) | `datalake_gold/governance_YYYYMMDD_HHMMSS.parquet`, `datalake_gold/storytelling_YYYYMMDD_HHMMSS.parquet` |
-| Dashboard | planned, Workshop 4 (Plotly Dash, reads only the Gold files) | `dashboard/` |
+| Dashboards | working: governance (`localhost:8050`) and storytelling (`localhost:8051`), Plotly Dash, read only the Gold files | `dashboard/` |
+
+## Quick start (fresh clone, end to end)
+1. **Pipeline (Docker):** `docker compose up -d --build`, open http://localhost:8080, trigger the three DAGs
+   in order (details below).
+2. **Dashboards (Python 3.10+ on the host):**
+   ```bash
+   python -m venv .venv-dashboard
+   # Windows (cmd):          .venv-dashboard\Scripts\activate
+   # Windows (PowerShell):   .venv-dashboard\Scripts\Activate.ps1
+   # macOS / Linux:          source .venv-dashboard/bin/activate
+   pip install -r requirements-dashboard.txt
+   python -m dashboard.governance_app      # terminal 1 -> http://localhost:8050
+   python -m dashboard.storytelling_app    # terminal 2 -> http://localhost:8051
+   ```
+   Run both commands from the repository root. Each dashboard reads the newest
+   `datalake_gold/governance_*.parquet` / `storytelling_*.parquet`; a banner appears when a newer Gold run
+   exists, and **Refresh data** (or reloading the page) shows it.
 
 ## Run the pipeline with Docker
 Requirements: Docker Desktop (Windows/macOS) or Docker Engine + Compose (Linux).
@@ -92,7 +109,8 @@ ingest.py              CLI entry point: --mode historical | incremental | status
 config/sources.yaml    one entry per source (URL, format, schedule, watermark, license)
 data/raw/              raw landing zone (git-ignored)
 sql/                   schema definitions (draft)
-dashboard/             Plotly Dash app (Workshop 4)
+dashboard/             Plotly Dash apps: governance_app.py (8050), storytelling_app.py (8051),
+                       data_loader.py, components.py, theme.py, assets/ (Bootstrap Flatly CSS, offline)
 tests/, tests/fixtures/ tests and recorded responses
 notebooks/             01_source_profiling, 02_silver_exploration, 03_data_quality_findings, 04_gold_preview
 scripts/               sample collection (W1), report assets (W2, W3), replay_bronze_to_silver.py
@@ -100,6 +118,7 @@ docs/                  ingestion contract, ER and architecture diagrams, source-
 workshop_1/            Workshop 1 deliverables: final report PDF, mapping.md and samples/
 workshop_2/            Workshop 2 deliverables: report PDF and its LaTeX source (report/)
 workshop_3/            Workshop 3 deliverables: report PDF and its LaTeX source (report/)
+workshop_4/            Workshop 4 deliverables: report PDF, LaTeX source (report/) and screenshots/
 report/                LaTeX source of the Workshop 1 report (main.tex, references.bib, figures/, generated/)
 ```
 
@@ -143,43 +162,26 @@ The report is written in LaTeX (`report/`). After editing it, compile `report/ma
 | Silver rebuilt with v0.3 | `datalake_silver/*.parquet` (the Workshop 2 Silver files are in the Git history) |
 | Tests | `tests/test_text.py`, `tests/test_preprocessing.py`, `tests/test_gold.py` |
 
----
+## Workshop 4 deliverables
+Two independent Plotly Dash applications on top of the Gold layer (they never read Silver, Bronze or an API):
 
-## Workshop 4 — Interactive Dashboards (Plotly Dash)
+| Dashboard | Command (from the repository root) | URL | Audience |
+|---|---|---|---|
+| Governance | `python -m dashboard.governance_app` | http://localhost:8050 | technical reviewer / data engineer |
+| Storytelling | `python -m dashboard.storytelling_app` | http://localhost:8051 | emergency-management analyst (functional user) |
 
-Two independent dashboards visualise the Gold layer in real time:
+| Deliverable | Location |
+|---|---|
+| Dashboard Implementation Report (PDF) | `workshop_4/Workshop4_Team2_Report.pdf` (LaTeX source in `workshop_4/report/`) |
+| Governance dashboard | `dashboard/governance_app.py` |
+| Storytelling dashboard | `dashboard/storytelling_app.py` |
+| Shared modules | `dashboard/data_loader.py` (Gold access), `components.py` (header, cards, refresh), `theme.py` (palette) |
+| Integration adjustments | `src/flood_monitor/gold/storytelling.py` (Flood Risk Index v2), `airflow/dags/gold_processing_dag.py` (validator) |
+| Dashboard dependencies | `requirements-dashboard.txt` (also in `requirements.txt`) |
+| Screenshots (Airflow + both dashboards) | `workshop_4/screenshots/` |
+| Tests | `tests/test_dashboards.py` |
+| Release tag | `v1.0-workshop4` |
 
-| Dashboard | Port | Audience |
-|---|---|---|
-| Governance | http://localhost:8050 | Technical reviewer / data engineer |
-| Storytelling | http://localhost:8051 | Functional user (analyst) |
+Final end-to-end check: trigger Bronze (`{"force_all": true}`) -> wait for Silver -> trigger Gold -> a banner
+"A newer Gold run is available" appears on both dashboards within a minute -> **Refresh data**.
 
-Both read **only** from `datalake_gold/*.parquet` (Gold layer is the single source of truth for the presentation layer).
-
-### Run the dashboards
-
-```bash
-# One-time setup
-python -m venv .venv-dashboard
-.venv-dashboard/bin/pip install dash dash-bootstrap-components plotly pandas pyarrow
-
-# Governance dashboard (terminal 1)
-.venv-dashboard/bin/python -m dashboard.governance_app
-
-# Storytelling dashboard (terminal 2)
-.venv-dashboard/bin/python -m dashboard.storytelling_app
-
-Or activate the venv first:
-bash
-
-source .venv-dashboard/bin/activate.fish   # fish
-source .venv-dashboard/bin/activate        # bash/zsh
-python -m dashboard.governance_app
-python -m dashboard.storytelling_app
-
-Refresh with new Gold data
-
-The dashboards auto-select the most recent governance_*.parquet and storytelling_*.parquet on page load. To refresh after a new Gold DAG run, simply reload the browser (Ctrl+Shift+R).
-Requirements
-
-All dashboard dependencies are listed in requirements.txt. Minimum: dash, dash-bootstrap-components, plotly, pandas, pyarrow.

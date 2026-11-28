@@ -307,7 +307,16 @@ def alerts_now(al: DataFrame, run_ts: datetime) -> tuple[list, DataFrame]:
 
 
 def flood_risk_index(cur: DataFrame, alert_level: DataFrame, county_rate: DataFrame) -> list:
-    """US4: Flood Risk Index per county with its inputs (Workshop 1, Section 'Indicator proposal')."""
+    """US4: Flood Risk Index per county with its inputs.
+
+    Workshop 4 recalibration (v2, chosen with the back-test of fri_backtest):
+      HIGH    R24 >= 50 mm, or (P24 >= 95 and P7d >= 95), or alert level 3 (warning)
+      MEDIUM  P24 >= 95, or R7d >= 100 mm, or alert level 2 (watch)
+      LOW     otherwise
+    The flood-frequency term is shown as context only: in the Workshop 1 rule it lifted every
+    big county by one level, which made 9 of 10 alarms false (Workshop 3 back-test).
+    The Workshop 1 score is still written (fri_score_w1) for comparison.
+    """
     r24 = F.greatest(F.coalesce(F.col("nws24"), F.lit(0.0)), F.coalesce(F.col("prcp_mm"), F.lit(0.0)))
     rain_level = (F.when((F.col("p24") >= 99) | (r24 >= 75), 3)
                   .when((F.col("p24") >= 95) | (F.col("r7") >= 100), 2)
@@ -316,16 +325,20 @@ def flood_risk_index(cur: DataFrame, alert_level: DataFrame, county_rate: DataFr
              .withColumn("A", F.coalesce("alert_level", F.lit(0)).cast("int")) \
              .withColumn("R24", F.round(r24, 2)).withColumn("rain_level", rain_level) \
              .withColumn("topQ", F.coalesce("top_quartile", F.lit(False)).cast("int")) \
-             .withColumn("score", F.greatest("A", "rain_level") + F.col("topQ")) \
-             .withColumn("fri", F.when(F.col("score") >= 3, "HIGH").when(F.col("score") == 2, "MEDIUM").otherwise("LOW"))
-    out = [std(fri.withColumn("value", F.col("score")).withColumn("label", F.col("fri"))
-               .withColumn("period_start", F.col("obs_date")),
+             .withColumn("score_w1", F.greatest("A", "rain_level") + F.col("topQ"))
+    high = (F.col("R24") >= 50) | ((F.col("p24") >= 95) & (F.col("p7") >= 95)) | (F.col("A") >= 3)
+    medium = (F.col("p24") >= 95) | (F.col("r7") >= 100) | (F.col("A") >= 2)
+    fri = fri.withColumn("level", F.when(high, 3).when(medium, 2).otherwise(1)) \
+             .withColumn("fri", F.when(F.col("level") == 3, "HIGH").when(F.col("level") == 2, "MEDIUM")
+                         .otherwise("LOW"))
+    base = fri.withColumn("label", F.col("fri")).withColumn("period_start", F.col("obs_date"))
+    out = [std(base.withColumn("value", F.col("level")),
                section="flood_risk_index", metric="fri_score", user_story="US4", period_grain="day")]
-    for metric, col in (("input_R24_mm", "R24"), ("input_R7d_mm", "r7"), ("input_P24_percentile", "p24"),
+    for metric, col in (("fri_score_w1", "score_w1"), ("input_R24_mm", "R24"), ("input_R7d_mm", "r7"),
+                        ("input_P24_percentile", "p24"), ("input_P7d_percentile", "p7"),
                         ("input_alert_level", "A"), ("input_floods_per_year", "floods_per_year"),
                         ("input_top_quartile", "topQ"), ("input_rain_level", "rain_level")):
-        out.append(std(fri.withColumn("value", F.col(col)).withColumn("label", F.col("fri"))
-                       .withColumn("period_start", F.col("obs_date")),
+        out.append(std(base.withColumn("value", F.col(col)),
                        section="flood_risk_index", metric=metric, user_story="US4", period_grain="day"))
     return out
 
@@ -341,7 +354,8 @@ def fri_backtest(gh: DataFrame, fe: DataFrame, county_rate: DataFrame) -> list:
     days = F.col("obs_date").cast("timestamp").cast("long") / 86400
     d = d.withColumn("r7", F.sum("prcp_mm").over(Window.partitionBy("station_id").orderBy(days).rangeBetween(-6, 0)))
     thr = d.where("year <= 2020").groupBy("station_id", "month").agg(
-        *[F.percentile_approx("prcp_mm", q, 1000).alias(n) for q, n in ((0.90, "t90"), (0.95, "t95"), (0.99, "t99"))])
+        *[F.percentile_approx("prcp_mm", q, 1000).alias(n) for q, n in ((0.90, "t90"), (0.95, "t95"), (0.99, "t99"))],
+        F.percentile_approx("r7", 0.95, 1000).alias("r7_95"))
     d = d.join(thr, ["station_id", "month"])
     level = (F.when((F.col("prcp_mm") > F.col("t99")) | (F.col("prcp_mm") >= 75), 3)
              .when((F.col("prcp_mm") > F.col("t95")) | (F.col("r7") >= 100), 2)
@@ -354,14 +368,19 @@ def fri_backtest(gh: DataFrame, fe: DataFrame, county_rate: DataFrame) -> list:
                    .distinct().withColumn("flood", F.lit(True))
     d = d.join(flood_days, ["county", "obs_date"], "left").withColumn("flood", F.coalesce("flood", F.lit(False))) \
          .withColumn("split", F.when(F.col("year") <= 2020, "train 2010-2020").otherwise("test 2021-")).cache()
-    # Two rules are compared (Workshop 3 experiment): the Workshop 1 rule, where the frequency
-    # term lifts every top-quartile county by one level, and a rainfall-only rule.
-    rules = {"W1 rule: rain_level + top_quartile >= 2": F.col("score") >= 2,
-             "rain-only rule: rain_level >= 2": F.col("rain_level") >= 2}
+    # Workshop 1 rule (frequency term lifts every top-quartile county by one level) against the
+    # Workshop 4 recalibration (v2, see flood_risk_index). Alerts are not available for past years.
+    p, r7 = F.col("prcp_mm"), F.col("r7")
+    v2_high = (p >= 50) | ((p > F.col("t95")) & (r7 > F.col("r7_95")))
+    rules = {"W1 rule: MEDIUM or HIGH": F.col("score") >= 2,
+             "W1 rule: HIGH": F.col("score") >= 3,
+             "v2 rule: MEDIUM or HIGH": (F.col("rain_level") >= 2) | v2_high,
+             "v2 rule: HIGH": v2_high}
     out = []
     for rule, alarm in rules.items():
         r = d.withColumn("alarm", alarm)
         aggs = [F.sum(F.col("flood").cast("long")).alias("flood_days"),
+                F.countDistinct("year").alias("years"), F.count("*").alias("county_days"),
                 F.sum((F.col("flood") & F.col("alarm")).cast("long")).alias("hits"),
                 F.sum(F.col("alarm").cast("long")).alias("alarms"),
                 F.sum((F.col("alarm") & ~F.col("flood")).cast("long")).alias("false_alarms")]
@@ -374,7 +393,11 @@ def fri_backtest(gh: DataFrame, fe: DataFrame, county_rate: DataFrame) -> list:
                     term=rule, user_story="US4", period_grain="all"),
                 std(g.withColumn("value", far).withColumn("count", F.col("alarms"))
                     .withColumn("category", F.col("split")), section="fri_backtest",
-                    metric="false_alarm_rate_pct", term=rule, user_story="US4", period_grain="all")]
+                    metric="false_alarm_rate_pct", term=rule, user_story="US4", period_grain="all"),
+                std(g.withColumn("value", F.round(F.col("alarms") * 100.0 / F.col("county_days"), 2))
+                    .withColumn("count", F.col("county_days")).withColumn("category", F.col("split")),
+                    section="fri_backtest", metric="alarm_days_pct", term=rule, user_story="US4",
+                    period_grain="all")]
     return out
 
 
@@ -397,7 +420,7 @@ def narrative(fe: DataFrame, story_parts: DataFrame) -> DataFrame:
         lines.append(("3_what", f"{flash['value']:.0f}% of the events are flash floods; the most frequent "
                                 f"two-word phrase in the narratives is '{word['term']}'."))
     lines.append(("4_now", f"Highest current Flood Risk Index: {fri['label']} in {fri['county']} County "
-                           f"(score {fri['value']:.0f}, rainfall of {fri['period_start']})." if fri
+                           f"(latest complete rainfall day: {fri['period_start']})." if fri
                   else "No current Flood Risk Index available."))
     df = fe.sparkSession.createDataFrame(lines, "metric string, label string")
     return std(df, section="narrative", user_story="US4/US6", period_grain="all")

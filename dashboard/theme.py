@@ -76,3 +76,11 @@ CARD_STYLE = {
     "boxShadow": "0 1px 4px rgba(0,0,0,0.06)",
     "border": "1px solid #E5E8EB",
 }
+# Flood Risk Index levels (same green / amber / red semantics as severity)
+FRI_COLORS = {"LOW": GREEN, "MEDIUM": AMBER, "HIGH": VERMILLION}
+
+# Sequential scale for "share of severe events" (light amber -> vermillion)
+SEVERE_SCALE = [[0.0, "#FBE3C0"], [0.5, AMBER], [1.0, VERMILLION]]
+
+TEAM_NAME = "Team 2: Oscar Durán, Laura Natalia Pardo, Nicolás Romero"
+TOPIC = "Flood Monitoring and Risk System, Texas (USA), 2010-2026"

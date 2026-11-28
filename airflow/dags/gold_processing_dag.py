@@ -34,6 +34,7 @@ STORY_SECTIONS = {"headline", "severity_distribution", "trend", "seasonality", "
                   "category_breakdown", "source_comparison", "keywords", "keyword_severity",
                   "current_rainfall", "rain_climatology", "alerts", "flood_risk_index", "fri_backtest",
                   "narrative"}
+TOLERATED_MISSING_SECTIONS = {"alerts"}   # Workshop 4: may be empty when Texas has no flood alert
 
 default_args = {
     "owner": "team2_flood_monitor",
@@ -117,12 +118,16 @@ def gold_flood_processing():
             errors.append("empty Gold summary")
         missing_groups = GOV_GROUPS - set(gov["kpi_group"])
         missing_sections = STORY_SECTIONS - set(story["section"])
-        # Sections/KPI groups with no data in Silver for the current period are expected
-        # (e.g., no active NWS alerts at the moment of the run). Log them, don't block.
+        # Workshop 4: a section may be legitimately empty (no NWS flood alert in Texas in the
+        # last 7 days -> no "alerts" rows). Only those sections are tolerated; any other missing
+        # section or KPI group is still a hard error.
+        tolerated = missing_sections & TOLERATED_MISSING_SECTIONS
+        if tolerated:
+            logger.warning("Storytelling: section(s) %s empty in this run (tolerated)", sorted(tolerated))
         if missing_groups:
-            logger.warning("Governance: missing KPI groups %s (non-blocking)", sorted(missing_groups))
-        if missing_sections:
-            logger.warning("Storytelling: missing sections %s (non-blocking — usually no data in Silver)", sorted(missing_sections))
+            errors.append(f"governance: missing KPI groups {sorted(missing_groups)}")
+        if missing_sections - tolerated:
+            errors.append(f"storytelling: missing sections {sorted(missing_sections - tolerated)}")
         failed = gov[gov["status"] == "fail"][["kpi_name", "topic", "field"]].to_dict("records")
         report = {"governance_rows": len(gov), "storytelling_rows": len(story),
                   "kpi_fail": failed, "errors": errors}

@@ -39,3 +39,10 @@ workshop_2/report/*.toc
 datalake_gold/_tmp_*/
 spark-warehouse/
 metastore_db/
+workshop_4/report/main.pdf
+workshop_4/report/*.aux
+workshop_4/report/*.bbl
+workshop_4/report/*.blg
+workshop_4/report/*.log
+workshop_4/report/*.out
+workshop_4/report/*.toc

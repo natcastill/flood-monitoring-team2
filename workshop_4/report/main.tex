@@ -1,0 +1,399 @@
+% PLANTILLA APA7
+% Creado por: Isaac Palma Medina
+% Última actualización: 25/07/2021
+% @COPYLEFT
+
+% Fuentes consultadas (todos los derechos reservados):
+% Normas APA. (2019). Guía Normas APA. https://normas-apa.org/wp-content/uploads/Guia-Normas-APA-7ma-edicion.pdf
+% Tecnológico de Costa Rica [Richmond]. (2020, 16 abril). LaTeX desde cero con Overleaf (1 de 3) [Vídeo]. YouTube. https://www.youtube.com/watch?v=kM1KvHVuaTY Weiss, D. (2021).
+% Formatting documents in APA style (7th Edition) with the apa7 LATEX class. https://ctan.math.washington.edu/tex-archive/macros/latex/contrib/apa7/apa7.pdf @COPYLEFT
+% ===========================================================================
+
+\documentclass[stu, 12pt, letterpaper, donotrepeattitle, floatsintext, natbib]{apa7}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{comment}
+\usepackage{marvosym}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[normalem]{ulem}
+\usepackage[english]{babel}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{xltabular}
+\usepackage{array}
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage{xcolor}
+\useunder{\uline}{\ul}{}
+\hypersetup{hidelinks}
+\sloppy
+
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  breaklines=true,
+  frame=single,
+  backgroundcolor=\color{gray!8},
+  rulecolor=\color{gray!40},
+  xleftmargin=6pt,
+  xrightmargin=6pt,
+  columns=fullflexible
+}
+
+% Screenshots live in workshop_4/screenshots/ (repository) or screenshots/ (Overleaf project).
+\newcommand{\shot}[4][0.95]{\begin{figure}[H]\centering\caption{#3}\label{#4}
+  \IfFileExists{../screenshots/#2}{\includegraphics[width=#1\textwidth]{../screenshots/#2}}%
+  {\IfFileExists{screenshots/#2}{\includegraphics[width=#1\textwidth]{screenshots/#2}}%
+  {\fbox{\parbox{0.9\textwidth}{\centering\vspace{1cm}\textcolor{red}{\textbf{Screenshot pending:} \texttt{screenshots/\detokenize{#2}}}\vspace{1cm}}}}}
+  \end{figure}}
+
+\thispagestyle{empty}
+\title{\Large Interactive Dashboards with Plotly Dash \\ \large Workshop No. 4: Flood Monitoring and Risk System (Texas, USA)}
+\author{Oscar Durán (20212020080) \\ Laura Natalia Pardo (20221020146) \\ Nicolás Romero (20222020023)}
+\affiliation{Universidad Distrital Francisco José de Caldas}
+\course{Data Analysis Programming (2026-III)}
+\professor{Carlos Andrés Sierra}
+\duedate{Bogotá, D.C., November 2026}
+
+\begin{document}
+\let\oldunderscore\_
+\renewcommand{\_}{\oldunderscore\allowbreak}
+\maketitle
+
+\pagenumbering{roman}
+\renewcommand\contentsname{\large Contents}
+\tableofcontents
+\setcounter{tocdepth}{2}
+\newpage
+
+\pagenumbering{arabic}
+
+\noindent \textbf{Team 2 Members:} Oscar Durán (20212020080), Laura Natalia Pardo (20221020146), Nicolás Romero (20222020023) \\
+\textbf{Professor:} Eng. Carlos Andrés Sierra, M.Sc. \\
+\textbf{Location \& Date:} Bogotá, D.C., November 2026 \\
+\textbf{GitHub Repository:} \url{https://github.com/natcastill/flood-monitoring-team2} (tag \texttt{v1.0-workshop4})
+
+% ===========================================================================
+\section{\large 1. Executive Summary}
+Workshop~3 produced the Gold layer of the Flood Monitoring and Risk System: a governance summary of the pipeline and a storytelling summary for the functional user, both written by a PySpark DAG as timestamped Parquet files in \texttt{datalake\_gold/}. Workshop~4 connects that layer to its two audiences through two independent Plotly Dash applications \citep{plotly2024}. Both applications read only the newest Gold files with \texttt{pd.read\_parquet()}; they never touch Silver, Bronze or an external API.
+
+\textbf{Integration status.} The three DAGs (Bronze $\rightarrow$ FileSensor Silver $\rightarrow$ PySpark Gold) ran end to end in the team's Docker Compose stack on 26--27 November 2026 without failed runs (Section~2). We fixed six integration problems in this workshop. The most important was the Flood Risk Index: the Workshop~3 back-test showed that 9 of 10 of its alarms were false, so we recalibrated it (Section~2.3). With the new rule, HIGH is raised on 1.4\,\% of the days instead of 6.8\,\%, and false HIGH alarms drop from 86\,\% to 58\,\%.
+
+\textbf{Governance dashboard} (\texttt{localhost:8050}, technical reviewer). It answers one question: \emph{can I trust the data of the pipeline right now?} The latest Gold run shows:
+\begin{itemize}
+    \item 39,494 Silver records from 4 sources;
+    \item a 0\,\% null rate in required fields;
+    \item a 1.9\,\% duplicate rate before de-duplication (66\,\% for the NWS alerts) and 0\,\% after;
+    \item 99.99\,\% schema compliance;
+    \item 102 of 123 graded KPIs passing, 21 warnings and no failures.
+\end{itemize}
+
+\textbf{Storytelling dashboard} (\texttt{localhost:8051}, emergency-management analyst). It answers: \emph{is today unusual, and where, when and how does Texas flood?} It opens with four data-driven sentences and the Flood Risk Index of five counties: Nueces County is HIGH after 142.6~mm in a week. It then tells the history of 8,000 flood reports since 2010: 80\,\% flash floods, a peak in May, Bexar County first with 18.9 floods per year, and ``heavy rain'', ``flash flooding'' and ``high water'' as the most frequent phrases.
+
+\textbf{Adaptation to our topic.} The workshop template is about public-opinion sentiment; our project is about floods. We kept every required component and mapped it to the flood domain: the \emph{sentiment} of a record is its flood \emph{severity} (0--3, defined in Workshop~1), with the same green / amber / red code (minor / moderate / severe). Table~\ref{tab:story-map} gives the full mapping.
+
+% ===========================================================================
+\section{\large 2. End-to-End Integration Verification and Adjustments}
+\subsection{2.1 Execution sequence}
+The pipeline was started with \texttt{docker compose up -d --build} and run in order:
+\begin{enumerate}
+    \item \textbf{Bronze} (\texttt{bronze\_flood\_ingestion\_dag}, \texttt{*/15 * * * *}) pulled the NWS alerts and observations, scraped the Storm Events catalog and wrote one JSON file per run.
+    \item \textbf{Silver} (\texttt{silver\_flood\_processing\_dag}, \texttt{FileSensor}) detected each new Bronze file and wrote typed Parquet files, skipping rows already in Silver.
+    \item \textbf{Gold} (\texttt{gold\_flood\_processing\_dag}, PySpark local mode) read the whole Silver folder and wrote the two summaries.
+\end{enumerate}
+Between 26 and 27 November the stack produced 18 new Bronze files, 4 new Silver files (the other runs only brought rows already in Silver) and 8 Gold runs. Every line of the Gold manifest (\texttt{\_gold\_manifest.jsonl}) reports \texttt{kpi\_fail = []} and \texttt{errors = []}. Figures~\ref{fig:dags}--\ref{fig:goldgraph} show the Airflow evidence.
+
+\shot{airflow_dags_list_w4.png}{Airflow Web UI: the three DAGs with their successful runs and no failed run.}{fig:dags}
+\shot[0.85]{bronze_grid_w4.png}{Grid view of \texttt{bronze\_flood\_ingestion\_dag}.}{fig:bronzegrid}
+\shot[0.85]{silver_grid_w4.png}{Grid view of \texttt{silver\_flood\_processing\_dag}.}{fig:silvergrid}
+\shot[0.85]{gold_grid_w4.png}{Grid view of \texttt{gold\_flood\_processing\_dag}.}{fig:goldgrid}
+\shot[0.85]{gold_graph_w4.png}{Graph view of a \texttt{gold\_flood\_processing\_dag} run: \texttt{check\_silver\_inputs} $\rightarrow$ \texttt{build\_governance\_summary} $\rightarrow$ \texttt{build\_storytelling\_summary} $\rightarrow$ \texttt{validate\_gold\_outputs} $\rightarrow$ \texttt{record\_gold\_manifest}.}{fig:goldgraph}
+
+\subsection{2.2 Integration adjustments made in Workshop 4}
+Table~\ref{tab:adjust} lists the corrections of this workshop. They are separate from the Workshop~3 pipeline improvements (W3-1 to W3-10).
+
+{\scriptsize
+\begin{xltabular}{\textwidth}{>{\raggedright\arraybackslash}p{0.7cm} >{\raggedright\arraybackslash}p{3.4cm} >{\raggedright\arraybackslash}p{4.6cm} >{\raggedright\arraybackslash}X}
+\caption{Integration adjustments of Workshop 4.}\label{tab:adjust}\\
+\toprule
+\textbf{\#} & \textbf{Problem found} & \textbf{Correction} & \textbf{Where} \\
+\midrule
+\endfirsthead
+\caption[]{(continued)}\\
+\toprule
+\textbf{\#} & \textbf{Problem found} & \textbf{Correction} & \textbf{Where} \\
+\midrule
+\endhead
+\midrule\multicolumn{4}{r}{\textit{continued on next page}}\\
+\endfoot
+\bottomrule
+\endlastfoot
+A1 & On a Linux host, the bind-mounted folders belonged to the developer's user, so the webserver could not write \texttt{airflow/logs/scheduler} and Spark could not create \texttt{datalake\_gold/\_temporary/}. & The folders were given to the container user (\texttt{sudo chown -R 50000:0}); \texttt{AIRFLOW\_UID=50000} documented in \texttt{.env}. Docker Desktop on Windows is not affected. & host setup \\
+A2 & When Texas had no flood alert in the last 7 days, the storytelling summary had no \texttt{alerts} rows and \texttt{validate\_gold\_outputs} failed the run. & An explicit allow-list, \texttt{TOLERATED\_MISSING\_SECTIONS = \{"alerts"\}}, turns only that case into a warning; any other missing section or KPI group is still a hard error. & \texttt{gold\_processing\_dag.py} \\
+A3 & The Workshop~3 back-test showed that 90\,\% of the index alarms were false. & Flood Risk Index v2 (Section~2.3); the Workshop~1 score is kept as \texttt{fri\_score\_w1}, and the back-test now compares both rules. & \texttt{gold/storytelling.py} \\
+A4 & Gold columns were read with the wrong meaning: the first trend chart plotted the average severity (\texttt{value}) on an axis labelled ``events''. & One data-access module, \texttt{dashboard/data\_loader.py}, turns each Gold filter into the exact table of one component (\texttt{count} = events, \texttt{value} = average severity). & \texttt{data\_loader.py} \\
+A5 & The dashboards loaded the Gold file once, when the server started, so a new Gold run was not shown. The ``KPIs passing'' card was a fixed text. & The layout is now a function: every page load reads the newest Gold file. Every 60~s the page compares the newest file name with the one on screen and shows a ``newer Gold run available'' banner, and a \emph{Refresh data} button reloads it. All card numbers are computed from the Gold rows. & both apps, \texttt{components.py} \\
+A6 & The volume chart only showed 2 of the 4 sources (observations and alerts have a daily grain); the Bootstrap stylesheet came from a CDN, so the layout broke without internet; the README only had Linux commands. & Volume per year for all sources, or per ingestion day (selector). Bootstrap Flatly is served from \texttt{dashboard/assets/}. A \texttt{requirements-dashboard.txt} and Windows / macOS / Linux commands were added to the README. & apps, README \\
+\end{xltabular}
+}
+
+\noindent No Bronze or Silver transformation changed in this workshop. Only the Gold index rule, the Gold validator and the presentation layer changed.
+
+\subsection{2.3 Flood Risk Index recalibration}
+The Workshop~1 rule adds one level when a county is in the top quartile of flood frequency. The five station counties are all big cities in that quartile, so any day above the 90th rainfall percentile already gave MEDIUM, and any day above the 95th percentile gave HIGH. Because only 1.3\,\% of the county-days had a flood report, most alarms were bound to be false. We compared several rules on the same data as Workshop~3: 5 counties, county-days 2010--2026, thresholds from 2010--2020 only, results on 2021--2026. We kept a two-tier rule (v2):
+\begin{itemize}
+    \item \textbf{HIGH:} $R_{24} \geq 50$~mm, or ($P_{24} \geq 95$ and $P_{7d} \geq 95$), or an NWS warning in effect (alert level 3);
+    \item \textbf{MEDIUM:} $P_{24} \geq 95$, or $R_{7d} \geq 100$~mm, or an NWS watch (alert level 2);
+    \item \textbf{LOW:} otherwise.
+\end{itemize}
+Flood frequency is shown on the dashboard as context, but it no longer raises the level.
+
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{Back-test of the index on 2021--2026 (10,696 county-days, 138 flood days). Hit rate = flood days with an alarm; false alarms = alarm days without a flood report.}
+\label{tab:fri}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Rule & Alarm days & \% of days & Hit rate \% & False alarms \% \\
+\midrule
+W1 rule: MEDIUM or HIGH & 1,192 & 11.1 & 81.9 & 90.5 \\
+W1 rule: HIGH & 729 & 6.8 & 73.2 & 86.2 \\
+v2 rule: MEDIUM or HIGH & 729 & 6.8 & 73.2 & 86.2 \\
+v2 rule: HIGH & 151 & 1.4 & 45.7 & 58.3 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent With v2, MEDIUM keeps the sensitivity of the old HIGH (73\,\% of flood days are flagged). HIGH becomes a real warning: about 5 days per county and year instead of 25, and 4 in 10 HIGH days had a flood report (1 in 7 before). Some ``false'' alarms are certainly real floods that nobody reported to NOAA, so these rates are conservative. Alerts cannot be back-tested, because the NWS API only keeps recent alerts. Both rules are stored in the Gold summary (section \texttt{fri\_backtest}), so the comparison can be repeated after every run.
+
+% ===========================================================================
+\section{\large 3. Governance Dashboard Documentation}
+\subsection{3.1 Audience and purpose}
+The governance dashboard is for the technical reviewer and the data engineer. It answers, from top to bottom: \emph{is the pipeline healthy?} (cards), \emph{where is data missing or unusual?} (null and outlier charts), \emph{is it complete and fresh?} (volume and freshness), and \emph{what exactly is the value of each KPI?} (table).
+
+\subsection{3.2 Layout and components}
+\begin{enumerate}
+    \item \textbf{Header:} project title, question of the dashboard, topic, team, \emph{data last updated} (the \texttt{gold\_run\_ts} of the file), name of the Gold file, and the \emph{Refresh data} button.
+    \item \textbf{KPI summary cards:}
+    \begin{itemize}
+        \item total records (39,494);
+        \item null rate: 3.3\,\% over all fields, 0\,\% in the required ones;
+        \item duplicate rate: 1.9\,\% before de-duplication (worst source: alerts, 66\,\%) and 0\,\% after;
+        \item schema compliance: 99.99\,\% of the records, 100\,\% of the files.
+    \end{itemize}
+    \item \textbf{Status cards:} KPIs passing (102 of 123 KPIs that have a threshold; 71 more are informational), warnings (21) and failures (0).
+    \item \textbf{Null rate bar chart:} horizontal bars ordered by severity, with a source selector. Red bars are required fields, which must be 0\,\%; blue bars are fields missing by design, and the tooltip gives the reason.
+    \item \textbf{KPI status distribution:} bars for ok, info, warn and fail.
+    \item \textbf{Volume over time:} records per source by year of the event, or by Bronze ingestion day (selector), on a logarithmic axis because the sources differ by three orders of magnitude.
+    \item \textbf{Outlier rate chart:} share of flagged records per numeric field (IQR, Z-score, NOAA quality flag, physical range).
+    \item \textbf{Source freshness:} hours since the last successful pull of each source, colored by status against the ingestion contract (US5).
+    \item \textbf{Data quality summary table:} all 222 KPI values of the run, with value, unit, threshold and status. Warnings and failures come first; the table can be filtered and sorted.
+\end{enumerate}
+
+\shot{governance_dashboard_w4_top.png}{Governance dashboard (\texttt{localhost:8050}), upper half: header, KPI cards, null rates and status (Gold run of 28 November 2026, 04:20 UTC).}{fig:gov-dash}
+\shot{governance_dashboard_w4_bottom.png}{Governance dashboard, lower half: volume, outliers, freshness and the KPI table.}{fig:gov-dash2}
+
+\subsection{3.3 KPI mapping}
+\begin{table}[H]
+\centering
+\scriptsize
+\caption{Governance dashboard: Workshop 4 component and Gold rows used.}
+\label{tab:gov-map}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{5.2cm} >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Component} & \textbf{Gold filter (\texttt{kpi\_name})} & \textbf{Computation in the dashboard} \\
+\midrule
+KPI summary cards & \texttt{records\_total}, \texttt{null\_rate}, \texttt{duplicate\_rate\_before/after\_dedup}, \texttt{schema\_compliance\_records/files} & weighted rates: sum of numerators / sum of denominators \\
+Status cards & column \texttt{status} of all rows & counts of ok / warn / fail / info \\
+Null rate bar chart & \texttt{null\_rate} with value $>$ 0 & \texttt{threshold} not null = required field \\
+Volume over time & \texttt{records\_by\_event\_period}, \texttt{records\_ingested} & event days added up to years \\
+Outlier rate chart & \texttt{outlier\_rate} & as stored \\
+Source freshness & \texttt{ingestion\_lag\_hours} & color = \texttt{status} \\
+Quality summary table & every row with \texttt{period\_grain = all} & sorted by status \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{3.4 Design rationale}
+The technical reader wants density and precision \citep{few2006}. Every chart has exact values as labels or tooltips, the table shows each threshold next to its value, and the color of a status is the same in the cards, the bars and the table. The 21 warnings are honest: 16 come from the ingestion-frequency KPI, because the Docker stack only ran during work sessions and not 24~hours a day, and 5 from the freshness KPI, because the Gold run happened 9~hours after the last Bronze run. The dashboard makes the gap visible instead of hiding it.
+
+% ===========================================================================
+\section{\large 4. Storytelling Dashboard Documentation}
+\subsection{4.1 Audience and narrative flow}
+The storytelling dashboard is for the emergency-management analyst of Workshop~1, who is not a programmer. It follows a story from the key insight to the detail \citep{knaflic2015}:
+\begin{enumerate}
+    \item \textbf{The story in four sentences} (narrative summary cards). The Gold job writes them from the data of the run: \emph{where} (Bexar County has the most flood reports since 2010: 322 events, 18.9 per year), \emph{when} (May is the peak month), \emph{what} (80\,\% are flash floods; most frequent phrase ``heavy rain''), and \emph{now} (highest current index: HIGH in Nueces County).
+    \item \textbf{Is today unusual?}
+    \begin{itemize}
+        \item Flood Risk Index cards for the five counties (US4). Each card gives the level, a plain-language explanation and its inputs.
+        \item A chart of the latest daily and weekly rainfall percentile against the same station and month since 2010, with the 95th-percentile line (US2, US3).
+        \item The flood-alert panel (US1). In the latest run it reports that no flood alert was issued in Texas in the last 7 days.
+    \end{itemize}
+    \item \textbf{Texas floods since 2010.}
+    \begin{itemize}
+        \item Headline cards: 8,000 events, 80\,\% flash floods, 432 deaths, USD~49.0~billion of damage.
+        \item Severity donut, top-10 counties and top phrases.
+        \item A year-range slider that filters the volume chart and the severity-trend chart.
+        \item The source comparison.
+    \end{itemize}
+\end{enumerate}
+Interactions: hover tooltips on every chart, zoom and pan, the year-range slider, the phrases / single-words selector, and the refresh banner.
+
+\shot{storytelling_dashboard_w4_top.png}{Storytelling dashboard (\texttt{localhost:8051}), upper half: the four sentences and ``Is today unusual?'' (Gold run of 28 November 2026, 04:20 UTC).}{fig:story-dash}
+\shot{storytelling_dashboard_w4_bottom.png}{Storytelling dashboard, lower half: Texas floods since 2010.}{fig:story-dash2}
+
+\subsection{4.2 Mapping from the workshop template to flood monitoring}
+\begin{table}[H]
+\centering
+\scriptsize
+\caption{Storytelling dashboard: required component, flood-monitoring equivalent and Gold data.}
+\label{tab:story-map}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{2.6cm} >{\raggedright\arraybackslash}p{4.2cm} >{\raggedright\arraybackslash}p{3.3cm} >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Template component} & \textbf{Flood-monitoring equivalent} & \textbf{Gold section / metric} & \textbf{Why} \\
+\midrule
+Sentiment distribution (pie/donut) & Donut of flood severity: minor 5.2\,\%, moderate 84.2\,\%, severe 10.7\,\% & \texttt{severity\_distribution} & 3 categories, so a donut is acceptable; severity is the ``tone'' of a flood record \\
+Sentiment trend (line) & Monthly average severity and its 12-month average, with minor / moderate / severe lines & \texttt{trend.events\_per\_month} (\texttt{value}) & shows whether floods are getting worse: the 12-month average stays near 2 \\
+Top keywords (bar, colored by sentiment) & Top 15 phrases or words; bar = \% of reports that use it, color = \% of those reports that were severe & \texttt{keywords}, \texttt{keyword\_severity} & ``high water'' and ``water rescues'' are the phrases most linked to severe floods \\
+Source comparison (API vs.\ scraping) & Side-by-side bars of records and of average severity for the 3 API sources and the scraped NOAA catalog & \texttt{source\_comparison} & same two encodings as the template: volume and intensity \\
+Volume activity & Flood events per month; top 10\,\% months in red; peak annotated (May 2015, 559 events) & \texttt{trend.events\_per\_month} (\texttt{count}) & where the ``discussion'' peaks, i.e.\ flood activity \\
+Narrative summary card & Four sentences: where, when, what, now & \texttt{narrative} & written by the Gold job: no hand-written number \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{4.3 User-story mapping}
+\begin{table}[H]
+\centering
+\scriptsize
+\caption{Workshop 1 user stories and the dashboard elements that answer them.}
+\label{tab:user-stories}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{1.0cm} >{\raggedright\arraybackslash}p{4.4cm} >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Story} & \textbf{User need} & \textbf{Dashboard element} \\
+\midrule
+US1 & Know the flood alerts in effect & ``Flood alerts in effect'' panel (alerts in effect and last 7 days) \\
+US2 & Know the recent rainfall per station & Flood Risk Index cards (last day and last 7 days, in mm) and tooltips of the rainfall chart \\
+US3 & Compare it with the historical percentiles & ``How unusual is the latest rainfall?'' chart with the 95th-percentile line \\
+US4 & Know the Flood Risk Index per county & Five county cards (LOW / MEDIUM / HIGH with inputs) and the ``now'' sentence \\
+US5 & Know how fresh and complete the data is & Header timestamp and Gold file name; freshness and volume charts of the governance dashboard \\
+US6 & Understand where, when and how floods happen & Headline cards, severity donut, top counties, phrases, volume, trend \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\noindent One limitation is visible on the dashboard: GHCN-Daily publishes values several days late, and the last daily pull before this run was on 17 November, so the latest complete rainfall day is 10 November. The cards show that date next to every value instead of calling it ``today''.
+
+% ===========================================================================
+\section{\large 5. Visualization Design Decisions}
+\subsection{5.1 Chart types}
+\begin{table}[H]
+\centering
+\scriptsize
+\caption{Chart types and reasons.}
+\label{tab:chart-reasons}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{4.0cm} >{\raggedright\arraybackslash}p{3.0cm} >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Data} & \textbf{Chart} & \textbf{Reason} \\
+\midrule
+Headline figures, FRI level & cards & read at a glance, no decoding \\
+Severity distribution & donut & only 3 categories; total in the center \\
+Null rate, outlier rate, keywords, counties, freshness & horizontal bars & long labels read better sideways; sorted bars rank the items \citep{tufte2001} \\
+Volume per month or year & vertical bars & discrete periods; peaks stand out \\
+Severity over time & line + 12-month average & time series; the average removes monthly noise \\
+Rainfall percentile & grouped bars + reference line & two windows per station against one threshold \\
+Source comparison & two side-by-side bar panels & volume and severity have different units, so a second axis was avoided \\
+All KPI values & sortable table & many KPIs with mixed units and thresholds \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\noindent Pie charts are used only for the 3-category severity split. The two dashboards contain 5 charts plus a table, and 7 charts: we kept one chart per question rather than many charts.
+
+\subsection{5.2 Color palette}
+Both dashboards share \texttt{dashboard/theme.py}, based on the Okabe--Ito color-blind-safe palette \citep{okabe2008}. Green \texttt{\#009E73} means minor, ok or LOW; amber \texttt{\#E69F00} means moderate, warning or MEDIUM; vermillion \texttt{\#D55E00} means severe, failure or HIGH. This follows the green / grey-yellow / red rule of the workshop for sentiment. Blue \texttt{\#0072B2} and light blue \texttt{\#56B4E9} are used for neutral quantities. The keyword bars use a sequential light-amber-to-vermillion scale for the share of severe events, with a color bar as legend. In the source comparison, red marks the web-scraping source and blue the API sources. Color is never the only channel: values are also written as labels or in tooltips \citep{wcag21}.
+
+\subsection{5.3 Layout}
+A 12-column Bootstrap grid \citep{dbc2024} with a maximum width of 1,600~px fits a 1080p screen without horizontal scrolling. Every chart sits in a card with a title written as a question, a one-line subtitle saying what to look for, labeled axes with units, a legend when there is more than one series, and a source note. Every number on the page comes from the Gold file: the dashboards contain no hard-coded data.
+
+% ===========================================================================
+\section{\large 6. Reproducibility Evidence}
+From a fresh clone, following only the README:
+\begin{lstlisting}[language=bash]
+copy .env.example .env            # macOS/Linux: cp .env.example .env
+docker compose up -d --build      # Airflow at http://localhost:8080 (admin/admin)
+# trigger bronze_flood_ingestion_dag with {"force_all": true}, wait for the Silver DAG,
+# then trigger gold_flood_processing_dag
+python -m venv .venv-dashboard
+.venv-dashboard\Scripts\activate  # macOS/Linux: source .venv-dashboard/bin/activate
+pip install -r requirements-dashboard.txt
+python -m dashboard.governance_app      # http://localhost:8050
+python -m dashboard.storytelling_app    # http://localhost:8051 (second terminal)
+\end{lstlisting}
+Each dashboard starts with one command and runs independently on its own port. \texttt{tests/test\_dashboards.py} builds both layouts and every figure from the Gold files; the full suite (22 tests) passes. For the final end-to-end test, a new Gold run (28 November, 04:20 UTC) was produced after the Docker runs, with the recalibrated index. For a page still showing the previous run, the refresh check of both dashboards returned the ``newer Gold run available'' banner; for a page already showing the new run it returned nothing. After \emph{Refresh data}, both dashboards showed the new timestamp (Figures~\ref{fig:gov-dash}--\ref{fig:story-dash2}). The commit of this delivery is tagged \texttt{v1.0-workshop4}.
+
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{Screenshots in \texttt{workshop\_4/screenshots/}.}
+\label{tab:screens}
+\begin{tabular}{@{}ll@{}}
+\toprule
+File & Content \\
+\midrule
+\texttt{airflow\_dags\_list\_w4.png} & the three DAGs with their run history (Figure~\ref{fig:dags}) \\
+\texttt{bronze\_grid\_w4.png}, \texttt{silver\_grid\_w4.png} & Bronze and Silver runs (Figures~\ref{fig:bronzegrid}, \ref{fig:silvergrid}) \\
+\texttt{gold\_grid\_w4.png}, \texttt{gold\_graph\_w4.png} & Gold runs and task chain (Figures~\ref{fig:goldgrid}, \ref{fig:goldgraph}) \\
+\texttt{governance\_dashboard\_w4.png} (+ \texttt{\_top}, \texttt{\_bottom}) & governance dashboard, full page (Figures~\ref{fig:gov-dash}, \ref{fig:gov-dash2}) \\
+\texttt{storytelling\_dashboard\_w4.png} (+ \texttt{\_top}, \texttt{\_bottom}) & storytelling dashboard, full page (Figures~\ref{fig:story-dash}, \ref{fig:story-dash2}) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ===========================================================================
+\section{\large 7. Challenges and Resolutions}
+{\scriptsize
+\begin{xltabular}{\textwidth}{>{\raggedright\arraybackslash}p{0.6cm} >{\raggedright\arraybackslash}p{3.3cm} >{\raggedright\arraybackslash}p{4.3cm} >{\raggedright\arraybackslash}X}
+\caption{Workshop 4 challenges and resolutions.}\label{tab:challenges}\\
+\toprule
+\textbf{\#} & \textbf{Challenge} & \textbf{Symptom} & \textbf{Resolution} \\
+\midrule
+\endfirsthead
+\caption[]{(continued)}\\
+\toprule
+\textbf{\#} & \textbf{Challenge} & \textbf{Symptom} & \textbf{Resolution} \\
+\midrule
+\endhead
+\midrule\multicolumn{4}{r}{\textit{continued on next page}}\\
+\endfoot
+\bottomrule
+\endlastfoot
+C1 & File permissions on a Linux host & \texttt{PermissionError: [Errno 13] /opt/airflow/logs/scheduler}; \texttt{Mkdirs failed to create .../datalake\_gold/\_temporary} & folders owned by UID 50000 (A1) \\
+C2 & A legitimately empty section & \texttt{Gold validation failed: missing sections ['alerts']} & allow-list for \texttt{alerts} only (A2) \\
+C3 & Index with 90\,\% false alarms & back-test of Workshop~3 & two-tier v2 rule chosen with the back-test (A3) \\
+C4 & Trend chart with the wrong column & axis ``events per month'' showing values 0--3 & typed accessors in \texttt{data\_loader.py} (A4) \\
+C5 & Keyword colors that misled & all top words had an average severity of 2.0--2.1, so fixed thresholds gave one color, and relative terciles showed differences that did not exist & color = share of severe events (0.6--36\,\%), a scale with a real spread and a color bar \\
+C6 & Stale dashboard & a new Gold run was not shown until the server was restarted & layout as a function, 60-second check and refresh banner (A5) \\
+C7 & Layout without Bootstrap & with no internet the CDN stylesheet failed and every card was stacked in one column & Bootstrap Flatly served locally from \texttt{dashboard/assets/} (A6) \\
+C8 & Sources of very different size & 30,786 rainfall records vs.\ 61 alerts made small sources invisible & logarithmic axes, with the exact value in labels and tooltips \\
+\end{xltabular}
+}
+
+% ===========================================================================
+\section{\large 8. Conclusions and Next Steps}
+The Medallion pipeline now reaches its users. Bronze, Silver and Gold run in Docker. Two independent Dash applications read only the Gold layer, follow every new Gold run, and answer one question each: whether the data can be trusted (governance) and whether today is unusual in the context of 16 years of Texas floods (storytelling). Every number on the dashboards comes from the Gold files, every chart answers a question of the functional user, and the six Workshop~1 user stories have a visible element. The integration work also improved the analysis itself: the recalibrated Flood Risk Index turns HIGH from a frequent false alarm into a warning that was right 4 times in 10 in the test years.
+
+Next steps:
+\begin{enumerate}
+    \item Run the stack continuously on a server, so the ingestion-frequency KPI reaches its contract.
+    \item Add the GHCN-Daily ``preliminary'' values or the NWS daily climate reports, to shorten the rainfall delay of US2.
+    \item Add county polygons to show the index on a map.
+\end{enumerate}
+
+\newpage
+\renewcommand\refname{\large\textbf{References}}
+\nocite{apache2026, docker2026, nws2026, noaa2026, menne2012, mckinney2010}
+\bibliography{mibibliografia}
+
+\end{document}

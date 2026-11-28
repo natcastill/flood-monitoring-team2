@@ -1,39 +1,24 @@
 # Workshop 4 — Interactive Dashboards with Plotly Dash
 
-This folder contains the deliverables for Workshop 4 of the Data Analysis Programming course.
-
-## Contents
-
-| File / folder | Description |
+| File / folder | Content |
 |---|---|
-| `REPORT.pdf` | Full dashboard implementation report (generated from `REPORT.md`) |
-| `REPORT.md` | Source of the report (Markdown) |
-| `screenshots/` | Visual evidence: Airflow DAG runs + both dashboards |
-| `README.md` | This file |
+| `Workshop4_Team2_Report.pdf` | Dashboard Implementation Report (APA 7, English) |
+| `report/` | LaTeX source of the report (`main.tex`, `mibibliografia.bib`); it reads the images from `../screenshots/` |
+| `screenshots/` | Airflow evidence (`airflow_dags_list_w4.png`, `bronze_grid_w4.png`, `silver_grid_w4.png`, `gold_grid_w4.png`, `gold_graph_w4.png`) and full-page captures of both dashboards (`governance_dashboard_w4*.png`, `storytelling_dashboard_w4*.png`) |
 
 ## Dashboards
 
-Two independent Plotly Dash applications:
-
-| Dashboard | File | Port | Audience |
+| Dashboard | Command (repository root) | URL | Audience |
 |---|---|---|---|
-| Governance | `dashboard/governance_app.py` | 8050 | Technical reviewer / data engineer |
-| Storytelling | `dashboard/storytelling_app.py` | 8051 | Functional user (analyst, journalist, risk researcher) |
+| Governance | `python -m dashboard.governance_app` | http://localhost:8050 | technical reviewer / data engineer |
+| Storytelling | `python -m dashboard.storytelling_app` | http://localhost:8051 | emergency-management analyst |
 
-Both read **exclusively** from `datalake_gold/*.parquet` via `pd.read_parquet()`, per Workshop 4 spec.
+Both read **only** the newest `datalake_gold/governance_*.parquet` / `storytelling_*.parquet` with
+`pd.read_parquet()`. Setup (Windows, macOS, Linux) is in the root `README.md` (section *Quick start*).
 
-## How to run
-
-See the "Run the dashboards" section in the repository root `README.md`.
-
-## Evidence of pipeline integration
-
-The three DAGs (`bronze_flood_ingestion_dag`, `silver_flood_processing_dag`,
-`gold_flood_processing_dag`) were executed end-to-end inside the Docker stack
-and produced three generations of Gold Parquet files:
-
-- `governance_20261117_192000.parquet` + `storytelling_20261117_192000.parquet`
-- `governance_20261126_182000.parquet` + `storytelling_20261126_182000.parquet`
-- `governance_20261126_192000.parquet` + `storytelling_20261126_192000.parquet`
-
-See `screenshots/` for the Airflow UI evidence.
+## Integration adjustments of this workshop
+A1 container file permissions on Linux hosts · A2 validator allow-list for an empty `alerts` section ·
+A3 Flood Risk Index v2 (recalibrated with the back-test) · A4 typed Gold accessors (`dashboard/data_loader.py`) ·
+A5 real refresh (newest Gold file on every page load, 60-second check, *Refresh data* button) and KPI cards
+computed from Gold · A6 all four sources in the volume chart, Bootstrap CSS served locally, Windows instructions.
+Details in Section 2 of the report.

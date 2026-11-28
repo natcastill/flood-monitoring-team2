@@ -8,9 +8,9 @@ beautifulsoup4>=4.12
 python-dotenv>=1.0
 matplotlib>=3.8
 jupyter>=1.0
-dash>=2.16
 pyspark>=3.5,<3.6
 pytest>=8
+# Workshop 4 dashboards (Plotly Dash)
 dash>=2.16
 dash-bootstrap-components>=1.5
 plotly>=5.18
